@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SR-71 · BLACKBIRD TECH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #020304;
+  --green: #00ff88;
+  --green-dim: #00ff8822;
+  --green-mid: #00ff8855;
+  --green-glow: #00ff8815;
+  --white: #f0f4f0;
+  --gray: #ffffff22;
+  --amber: #ffaa00;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--green);
+  font-family: 'Share Tech Mono', monospace;
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* CANVAS BACKGROUND */
+#bgCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* SCANLINE */
+.scanline {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,255,136,0.015) 2px,
+    rgba(0,255,136,0.015) 4px
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.sweep {
+  position: fixed;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(transparent, rgba(0,255,136,0.04), transparent);
+  animation: sweep 8s linear infinite;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@keyframes sweep { to { top: 200%; } }
+
+/* CORNER BRACKETS */
+.bracket {
+  position: fixed;
+  width: 50px; height: 50px;
+  border-color: var(--green-mid);
+  border-style: solid;
+  z-index: 10;
+  pointer-events: none;
+}
+.bracket.tl { top: 16px; left: 16px; border-width: 1px 0 0 1px; }
+.bracket.tr { top: 16px; right: 16px; border-width: 1px 1px 0 0; }
+.bracket.bl { bottom: 16px; left: 16px; border-width: 0 0 1px 1px; }
+.bracket.br { bottom: 16px; right: 16px; border-width: 0 1px 1px 0; }
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 60px;
+  border-bottom: 1px solid var(--green-dim);
+  background: rgba(2,3,4,0.85);
+  backdrop-filter: blur(20px);
+}
+
+.nav-logo {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 20px;
+  color: var(--white);
+  letter-spacing: 0.3em;
+}
+.nav-logo em { color: var(--green); font-style: normal; }
+
+.nav-center {
+  display: flex;
+  gap: 40px;
+}
+.nav-center a {
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  color: var(--green-mid);
+  text-decoration: none;
+  transition: color 0.2s;
+  cursor: crosshair;
+}
+.nav-center a:hover { color: var(--green); }
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--green-mid);
+}
+.pulse-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: pulsedot 2s ease-in-out infinite;
+}
+@keyframes pulsedot {
+  0%,100% { opacity: 1; box-shadow: 0 0 8px var(--green); }
+  50% { opacity: 0.3; box-shadow: none; }
+}
+
+/* HERO */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 5;
+  padding: 120px 40px 80px;
+  overflow: hidden;
+}
+
+.hero-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--green-dim) 1px, transparent 1px),
+    linear-gradient(90deg, var(--green-dim) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%);
+}
+
+.hero-rings {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--green-dim);
+  transform: translate(-50%, -50%);
+  top: 0; left: 0;
+}
+.ring:nth-child(1) { width: 400px; height: 400px; animation: rotatering 25s linear infinite; }
+.ring:nth-child(2) { width: 650px; height: 650px; animation: rotatering 40s linear infinite reverse; }
+.ring:nth-child(3) { width: 900px; height: 900px; animation: rotatering 60s linear infinite; border-style: dashed; }
+@keyframes rotatering { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+.classification {
+  font-size: 9px;
+  letter-spacing: 0.6em;
+  color: var(--green-mid);
+  margin-bottom: 40px;
+  animation: fadein 1s ease both;
+}
+
+.hero-sr71 {
+  margin-bottom: 20px;
+  animation: fadein 1.2s ease both;
+}
+
+.hero-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(64px, 14vw, 160px);
+  font-weight: 900;
+  color: var(--white);
+  letter-spacing: 0.15em;
+  line-height: 0.9;
+  text-shadow: 0 0 80px rgba(0,255,136,0.3);
+  animation: fadein 1.4s ease both, glitch 10s infinite;
+  position: relative;
+}
+
+.hero-title::before,
+.hero-title::after {
+  content: 'SR-71';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  color: var(--green);
+  opacity: 0;
+}
+
+@keyframes glitch {
+  0%,92%,100% { transform: none; }
+  93% { transform: translate(-3px, 1px) skew(1deg); }
+  94% { transform: translate(3px, -1px); }
+  95% { transform: translate(-2px, 2px) skew(-0.5deg); }
+  96% { transform: none; }
+}
+
+.hero-sub {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(10px, 2vw, 16px);
+  letter-spacing: 0.5em;
+  color: var(--green);
+  margin-top: 16px;
+  animation: fadein 1.6s ease both;
+}
+
+.hero-divider {
+  width: 200px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+  margin: 32px auto;
+  animation: fadein 1.8s ease both;
+}
+
+.hero-desc {
+  font-size: clamp(9px, 1.2vw, 11px);
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.25em;
+  line-height: 2.2;
+  max-width: 560px;
+  animation: fadein 2s ease both;
+}
+
+.hero-data-row {
+  display: flex;
+  gap: 48px;
+  margin-top: 60px;
+  animation: fadein 2.2s ease both;
+}
+.hero-data-item {
+  text-align: center;
+}
+.hero-data-val {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(18px, 3vw, 28px);
+  font-weight: 900;
+  color: var(--white);
+}
+.hero-data-val.g { color: var(--green); }
+.hero-data-label {
+  font-size: 8px;
+  letter-spacing: 0.4em;
+  color: var(--green-mid);
+  margin-top: 4px;
+}
+
+/* PLANE SVG */
+.plane-container {
+  width: min(700px, 90vw);
+  margin: 60px auto 0;
+  animation: fadein 2s ease both, planehover 6s ease-in-out infinite;
+  filter: drop-shadow(0 0 30px rgba(0,255,136,0.4));
+}
+@keyframes planehover {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+/* MANIFESTO SECTION */
+.manifesto {
+  position: relative;
+  z-index: 5;
+  padding: 120px 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.section-eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.6em;
+  color: var(--green-mid);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.section-eyebrow::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--green-mid);
+}
+
+.manifesto-text {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(20px, 3.5vw, 42px);
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.4;
+  letter-spacing: 0.05em;
+  max-width: 800px;
+}
+.manifesto-text em {
+  color: var(--green);
+  font-style: normal;
+}
+
+.manifesto-body {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+}
+.manifesto-col {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  line-height: 2.2;
+  letter-spacing: 0.1em;
+}
+.manifesto-col strong {
+  color: var(--green);
+  font-weight: normal;
+}
+
+/* TECH SECTION */
+.tech-section {
+  position: relative;
+  z-index: 5;
+  padding: 80px 60px;
+  border-top: 1px solid var(--green-dim);
+  border-bottom: 1px solid var(--green-dim);
+  background: rgba(0,255,136,0.02);
+}
+
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1px;
+  background: var(--green-dim);
+  margin-top: 60px;
+  border: 1px solid var(--green-dim);
+}
+
+.tech-card {
+  background: var(--black);
+  padding: 40px 32px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+.tech-card:hover { background: var(--green-glow); }
+.tech-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 2px; height: 0;
+  background: var(--green);
+  transition: height 0.4s ease;
+}
+.tech-card:hover::before { height: 100%; }
+
+.tech-number {
+  font-family: 'Orbitron', monospace;
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--green-dim);
+  line-height: 1;
+  margin-bottom: 24px;
+  transition: color 0.3s;
+}
+.tech-card:hover .tech-number { color: var(--green); }
+
+.tech-name {
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: 0.3em;
+  margin-bottom: 16px;
+}
+
+.tech-desc {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  line-height: 2;
+  letter-spacing: 0.1em;
+}
+
+/* IDENTITY SECTION */
+.identity {
+  position: relative;
+  z-index: 5;
+  padding: 120px 60px;
+  text-align: center;
+}
+
+.identity-logo {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(80px, 18vw, 200px);
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(0,255,136,0.15);
+  letter-spacing: 0.2em;
+  line-height: 1;
+  user-select: none;
+  position: relative;
+}
+
+.identity-tagline {
+  font-size: clamp(9px, 1.5vw, 13px);
+  letter-spacing: 0.6em;
+  color: var(--green);
+  margin-top: 24px;
+}
+
+.identity-coords {
+  margin-top: 48px;
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  font-size: 9px;
+  color: var(--green-mid);
+  letter-spacing: 0.3em;
+}
+
+/* FOOTER */
+footer {
+  position: relative;
+  z-index: 5;
+  border-top: 1px solid var(--green-dim);
+  padding: 32px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  color: var(--green-mid);
+}
+
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  nav { padding: 16px 24px; }
+  .nav-center { display: none; }
+  .manifesto { padding: 80px 24px; }
+  .manifesto-body { grid-template-columns: 1fr; gap: 32px; }
+  .tech-section { padding: 60px 24px; }
+  .identity { padding: 80px 24px; }
+  footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
+  .hero-data-row { gap: 24px; }
+  .hero { padding: 100px 24px 60px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<div class="scanline"></div>
+<div class="sweep"></div>
+
+<div class="bracket tl"></div>
+<div class="bracket tr"></div>
+<div class="bracket bl"></div>
+<div class="bracket br"></div>
+
+<nav>
+  <div class="nav-logo">SR<em>-71</em></div>
+  <div class="nav-center">
+    <a href="#manifesto">MISIÓN</a>
+    <a href="#tech">CAPACIDADES</a>
+    <a href="#identity">IDENTIDAD</a>
+  </div>
+  <div class="nav-right">
+    <div class="pulse-dot"></div>
+    SISTEMAS ACTIVOS
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-grid-overlay"></div>
+  <div class="hero-rings">
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+  </div>
+
+  <div class="classification">CLASIFICACIÓN: ULTRA · SANTIAGO · CHILE · EST. 2025</div>
+
+  <div class="hero-title">SR-71</div>
+  <div class="hero-sub">BLACKBIRD TECH</div>
+  <div class="hero-divider"></div>
+  <div class="hero-desc">
+    INTELIGENCIA ARTIFICIAL · DISEÑO DE AGENTES · LATINOAMÉRICA<br>
+    CONSTRUIMOS LO QUE OTROS AÚN NO IMAGINAN
+  </div>
+
+  <div class="hero-data-row">
+    <div class="hero-data-item">
+      <div class="hero-data-val g">IA</div>
+      <div class="hero-data-label">NATIVA</div>
+    </div>
+    <div class="hero-data-item">
+      <div class="hero-data-val">24/7</div>
+      <div class="hero-data-label">OPERACIÓN</div>
+    </div>
+    <div class="hero-data-item">
+      <div class="hero-data-val g">∞</div>
+      <div class="hero-data-label">ESCALABLE</div>
+    </div>
+    <div class="hero-data-item">
+      <div class="hero-data-val">LATAM</div>
+      <div class="hero-data-label">TERRITORIO</div>
+    </div>
+  </div>
+
+  <div class="plane-container">
+    <svg viewBox="0 0 800 180" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <!-- Fuselaje principal -->
+      <path d="M120,90 L400,72 L680,90 L400,108 Z" fill="rgba(0,255,136,0.12)" stroke="rgba(0,255,136,0.6)" stroke-width="0.8"/>
+      <!-- Ala izquierda -->
+      <path d="M120,90 L20,120 L60,90 L20,60 Z" fill="rgba(0,255,136,0.08)" stroke="rgba(0,255,136,0.5)" stroke-width="0.8"/>
+      <!-- Ala derecha -->
+      <path d="M680,90 L780,120 L740,90 L780,60 Z" fill="rgba(0,255,136,0.08)" stroke="rgba(0,255,136,0.5)" stroke-width="0.8"/>
+      <!-- Deriva superior -->
+      <path d="M330,50 L400,72 L470,50 Z" fill="rgba(0,255,136,0.1)" stroke="rgba(0,255,136,0.4)" stroke-width="0.8"/>
+      <!-- Deriva inferior -->
+      <path d="M330,130 L400,108 L470,130 Z" fill="rgba(0,255,136,0.1)" stroke="rgba(0,255,136,0.4)" stroke-width="0.8"/>
+      <!-- Cockpit -->
+      <ellipse cx="400" cy="90" rx="22" ry="11" fill="rgba(0,255,136,0.3)" stroke="rgba(0,255,136,0.9)" stroke-width="1"/>
+      <!-- Lineas estructurales -->
+      <line x1="60" y1="90" x2="140" y2="90" stroke="rgba(0,255,136,0.3)" stroke-width="0.5"/>
+      <line x1="660" y1="90" x2="740" y2="90" stroke="rgba(0,255,136,0.3)" stroke-width="0.5"/>
+      <line x1="200" y1="80" x2="200" y2="100" stroke="rgba(0,255,136,0.2)" stroke-width="0.5"/>
+      <line x1="300" y1="76" x2="300" y2="104" stroke="rgba(0,255,136,0.2)" stroke-width="0.5"/>
+      <line x1="500" y1="76" x2="500" y2="104" stroke="rgba(0,255,136,0.2)" stroke-width="0.5"/>
+      <line x1="600" y1="80" x2="600" y2="100" stroke="rgba(0,255,136,0.2)" stroke-width="0.5"/>
+      <!-- Glow central -->
+      <ellipse cx="400" cy="90" rx="80" ry="20" fill="rgba(0,255,136,0.03)"/>
+    </svg>
+  </div>
+</section>
+
+<section class="manifesto" id="manifesto">
+  <div class="section-eyebrow">DIRECTIVA PRINCIPAL</div>
+  <div class="manifesto-text">
+    No construimos software.<br>
+    Construimos <em>inteligencia</em> que opera<br>
+    cuando tú no puedes.
+  </div>
+  <div class="manifesto-body">
+    <div class="manifesto-col">
+      Blackbird Tech nació con una premisa simple: <strong>LATAM merece tecnología de primer nivel</strong>, no adaptaciones tardías de lo que el norte ya descartó. Diseñamos agentes autónomos que piensan, deciden y ejecutan. Sistemas que no necesitan supervisión constante porque fueron construidos para no necesitarla.
+    </div>
+    <div class="manifesto-col">
+      El SR-71 voló durante décadas sin que nadie pudiera interceptarlo. <strong>No porque fuera el más armado, sino porque era el más inteligente.</strong> Así operan nuestros sistemas. Velocidad, precisión, autonomía. En altitudes donde nadie más llega.
+    </div>
+  </div>
+</section>
+
+<section class="tech-section" id="tech">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="section-eyebrow">CAPACIDADES OPERATIVAS</div>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-number">01</div>
+        <div class="tech-name">DISEÑO DE AGENTES</div>
+        <div class="tech-desc">Arquitectura de sistemas multi-agente. Orquestación, memoria, razonamiento autónomo. Desde cero hasta producción.</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-number">02</div>
+        <div class="tech-name">AUTOMATIZACIÓN IA</div>
+        <div class="tech-desc">Procesos que se ejecutan solos. Toma de decisiones delegada a sistemas que no cometen errores humanos.</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-number">03</div>
+        <div class="tech-name">IMPLEMENTACIÓN</div>
+        <div class="tech-desc">Llevamos la tecnología al territorio. Integraciones reales, en producción, con resultados medibles desde el día uno.</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-number">04</div>
+        <div class="tech-name">INTELIGENCIA APLICADA</div>
+        <div class="tech-desc">No vendemos demos. Construimos sistemas que generan valor real. La diferencia entre juguete y herramienta.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="identity" id="identity">
+  <div class="identity-logo">BT</div>
+  <div class="identity-tagline">BLACKBIRD TECH · SANTIAGO · CHILE</div>
+  <div class="identity-coords">
+    <span>LAT -33.4489° S</span>
+    <span>LON -70.6693° W</span>
+    <span>ALT CLASIFICADO</span>
+  </div>
+</section>
+
+<footer>
+  <div>SR-71.CL · BLACKBIRD TECH © 2025</div>
+  <div>TODOS LOS SISTEMAS OPERATIVOS</div>
+  <div>SANTIAGO · CHILE</div>
+</footer>
+
+<script>
+// PARTICLE FIELD
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+
+function initParticles() {
+  particles = [];
+  const count = Math.floor((W * H) / 8000);
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: (Math.random() - 0.5) * 0.15,
+      r: Math.random() * 1.2 + 0.3,
+      o: Math.random() * 0.5 + 0.1,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+
+function drawParticles(t) {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach((p, i) => {
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.x < 0) p.x = W;
+    if (p.x > W) p.x = 0;
+    if (p.y < 0) p.y = H;
+    if (p.y > H) p.y = 0;
+
+    const opacity = p.o * (0.5 + 0.5 * Math.sin(t * 0.001 + p.phase));
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,255,136,${opacity})`;
+    ctx.fill();
+
+    // Connect nearby particles
+    for (let j = i + 1; j < Math.min(i + 5, particles.length); j++) {
+      const q = particles[j];
+      const dx = p.x - q.x, dy = p.y - q.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 120) {
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(q.x, q.y);
+        ctx.strokeStyle = `rgba(0,255,136,${0.06 * (1 - dist/120)})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  });
+  requestAnimationFrame(drawParticles);
+}
+
+resize();
+initParticles();
+requestAnimationFrame(drawParticles);
+window.addEventListener('resize', () => { resize(); initParticles(); });
+
+// LIVE CLOCK in nav
+setInterval(() => {
+  const now = new Date();
+  const ts = now.toISOString().replace('T',' ').substring(0,19);
+  document.title = `SR-71 · ${ts}`;
+}, 1000);
+
+// SCROLL REVEAL
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.tech-card, .manifesto-text, .manifesto-col').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(30px)';
+  el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
