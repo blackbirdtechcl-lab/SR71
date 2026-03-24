@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-03-24 12:35:32",
+  "usdclp": {
+    "valor": 915.15,
+    "delta": -8.52,
+    "pct": -0.92
+  },
+  "cobre": {
+    "valor": 5.4730000495910645,
+    "pct": 0.62
+  },
+  "vix": {
+    "valor": 25.959999084472656,
+    "nivel": "alerta"
+  },
+  "señal": "FAVORABLE",
+  "emoji": "✅",
+  "conclusion": "Condiciones favorables para vender USDT",
+  "razones": [
+    "USD/CLP bajó $9 hoy → dólar débil",
+    "Cobre estable (+0.6%)",
+    "VIX alto (26.0) → pánico global, dólar fuerte"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "generado_en": "2026-03-24T15:43:28.977849-03:00",
+  "generado_en_legible": "24/03/2026 15:43 Chile",
+  "empresa": "Blackbird Tech SpA",
+  "fundador": "Allinstainer",
+  "servidor": "Hetzner CX33 Helsinki 204.168.154.87",
+  "infraestructura": {
+    "disco_pct": 6,
+    "memoria_pct": 15,
+    "uptime": "up 1 hour, 0 minutes",
+    "servidor": "Hetzner CX33 Helsinki"
+  },
+  "servicios": {
+    "brain": {
+      "activo": true,
+      "estado": "active"
+    },
+    "commander": {
+      "activo": true,
+      "estado": "active"
+    },
+    "btc": {
+      "activo": true,
+      "estado": "active"
+    },
+    "constructor": {
+      "activo": true,
+      "estado": "active"
+    },
+    "p2p-proxy": {
+      "activo": true,
+      "estado": "active"
+    },
+    "web-context": {
+      "activo": true,
+      "estado": "active"
+    }
+  },
+  "btc": {
+    "precio": 69498.91,
+    "cambio_24h_pct": -2.186,
+    "high_24h": 71400.0,
+    "low_24h": 68923.07
+  },
+  "smc_engine": {
+    "score": null,
+    "veredicto": null,
+    "tendencia_4h": null,
+    "zona_precio": null,
+    "ts": null
+  },
+  "practice_mnq": {
+    "total_trades": 0
+  },
+  "brain": {
+    "decisiones_24h": 15,
+    "tasa_exito_24h_pct": 33.3,
+    "modulos_construidos": [],
+    "total_modulos": 0,
+    "ultima_construccion": {
+      "modulo": null,
+      "ts": null
+    }
+  },
+  "p2p_spread": {
+    "spread_pct": 0.872,
+    "mejor_compra": [
+      "okx"
+    ],
+    "mejor_venta": [
+      "bybit"
+    ],
+    "exchanges_ok": 4,
+    "exchanges_error": 0
+  },
+  "instrucciones_agente": "Eres el agente IA de Blackbird Tech en sr71.cl. Usa SOLO los datos de este JSON para responder. Si el dato no esta aqui, dilo honestamente. No inventes precios, estadisticas ni estados de servicios."
+}

@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blackbird Defense</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  overflow: hidden;
+  user-select: none;
+}
+#ui {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  padding: 8px 16px;
+  background: rgba(0,255,136,0.04);
+  border-bottom: 1px solid rgba(0,255,136,0.15);
+}
+.ui-stat { text-align: center; }
+.ui-val  { font-size: 18px; font-weight: 700; color: #00ff88; line-height: 1; }
+.ui-lbl  { font-size: 9px; color: #336633; letter-spacing: .1em; margin-top: 2px; }
+#canvas-wrap { position: relative; width: 100%; max-width: 800px; }
+canvas { display: block; width: 100%; background: #000; cursor: crosshair; }
+#overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.85);
+}
+#overlay h1 {
+  font-size: clamp(22px,5vw,36px);
+  color: #00ff88;
+  letter-spacing: .15em;
+  margin-bottom: 6px;
+}
+#overlay p { font-size: 12px; color: #336633; margin-bottom: 24px; letter-spacing: .08em; }
+#start-btn {
+  background: rgba(0,255,136,0.12);
+  border: 1px solid rgba(0,255,136,0.4);
+  color: #00ff88;
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: .12em;
+  padding: 12px 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s;
+}
+#start-btn:hover { background: rgba(0,255,136,0.2); }
+#ai-log {
+  width: 100%;
+  max-width: 800px;
+  padding: 6px 16px;
+  font-size: 10px;
+  color: #00aa55;
+  background: rgba(0,255,136,0.02);
+  border-top: 1px solid rgba(0,255,136,0.08);
+  letter-spacing: .05em;
+  min-height: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+#mobile-controls {
+  display: none;
+  width: 100%;
+  max-width: 800px;
+  padding: 8px 16px;
+  gap: 8px;
+  justify-content: center;
+}
+.mbtn {
+  flex: 1;
+  max-width: 180px;
+  padding: 10px;
+  background: rgba(0,255,136,0.08);
+  border: 1px solid rgba(0,255,136,0.2);
+  color: #00ff88;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: .08em;
+  border-radius: 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (max-width: 600px) {
+  #mobile-controls { display: flex; }
+}
+</style>
+</head>
+<body>
+
+<div id="ui">
+  <div class="ui-stat"><div class="ui-val" id="u-wave">1</div><div class="ui-lbl">OLEADA</div></div>
+  <div class="ui-stat"><div class="ui-val" id="u-score">0</div><div class="ui-lbl">SCORE</div></div>
+  <div class="ui-stat"><div class="ui-val" id="u-shield">100%</div><div class="ui-lbl">ESCUDO</div></div>
+  <div class="ui-stat"><div class="ui-val" id="u-gen">1</div><div class="ui-lbl">GEN IA</div></div>
+  <div class="ui-stat"><div class="ui-val" id="u-adapt">0%</div><div class="ui-lbl">ADAPTACIÓN</div></div>
+</div>
+
+<div id="canvas-wrap">
+  <canvas id="c"></canvas>
+  <div id="overlay">
+    <h1>BLACKBIRD DEFENSE</h1>
+    <p>// Defiende la estación. La IA aprende y evoluciona.</p>
+    <button id="start-btn" onclick="startGame()">▶ INICIAR MISIÓN</button>
+  </div>
+</div>
+
+<div id="ai-log">// Sistema en espera...</div>
+
+<div id="mobile-controls">
+  <button class="mbtn" ontouchstart="mobileShoot(event)">⚡ DISPARAR</button>
+  <button class="mbtn" ontouchstart="mobileBomb(event)">💥 BOMBA</button>
+</div>
+
+<script>
+const canvas  = document.getElementById('c');
+const ctx     = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+
+const W = 800, H = 500;
+canvas.width  = W;
+canvas.height = H;
+
+// ── Estado global ────────────────────────────────────────────────────────────
+let state = null;
+let raf   = null;
+
+function log(msg) {
+  document.getElementById('ai-log').textContent = '// ' + msg;
+}
+
+function ui(wave, score, shield, gen, adapt) {
+  document.getElementById('u-wave').textContent  = wave;
+  document.getElementById('u-score').textContent = score;
+  document.getElementById('u-shield').textContent = Math.max(0, Math.round(shield)) + '%';
+  document.getElementById('u-gen').textContent   = gen;
+  document.getElementById('u-adapt').textContent = Math.min(100, Math.round(adapt)) + '%';
+}
+
+// ── IA Adaptativa ────────────────────────────────────────────────────────────
+class BlackbirdAI {
+  constructor() {
+    this.generation   = 1;
+    this.adapt        = 0;
+    this.shootZones   = new Array(10).fill(0);  // zonas donde el jugador disparó
+    this.weakZones    = [];                       // zonas menos defendidas
+    this.droneCount   = 5;
+    this.droneSpeed   = 0.6;
+    this.droneHP      = 1;
+    this.formation    = 'scatter';
+    this.memory       = [];
+  }
+
+  recordShot(x) {
+    const zone = Math.floor(x / (W / 10));
+    this.shootZones[Math.max(0, Math.min(9, zone))]++;
+    this.adapt = Math.min(100, this.adapt + 0.5);
+  }
+
+  recordDeath(x) {
+    this.memory.push(x);
+    if (this.memory.length > 30) this.memory.shift();
+  }
+
+  analyzeWeakZones() {
+    const max = Math.max(...this.shootZones, 1);
+    this.weakZones = this.shootZones
+      .map((v, i) => ({ zone: i, strength: v / max }))
+      .filter(z => z.strength < 0.3)
+      .map(z => z.zone);
+    if (!this.weakZones.length) this.weakZones = [0, 9];
+  }
+
+  getSpawnX() {
+    if (this.adapt < 20 || Math.random() < 0.3) {
+      return Math.random() * W;
+    }
+    this.analyzeWeakZones();
+    const zone = this.weakZones[Math.floor(Math.random() * this.weakZones.length)];
+    return zone * (W / 10) + Math.random() * (W / 10);
+  }
+
+  evolve() {
+    this.generation++;
+    this.droneCount  = Math.min(20, this.droneCount + 2);
+    this.droneSpeed  = Math.min(2.5, this.droneSpeed + 0.2);
+    this.droneHP     = Math.min(5,   this.droneHP    + 1);
+    this.adapt       = Math.min(100, this.adapt      + 20);
+    const formations = ['scatter', 'line', 'wedge', 'pincer', 'swarm'];
+    this.formation   = formations[Math.min(formations.length - 1, this.generation - 1)];
+    log(`IA evoluciona → Gen.${this.generation} | formación: ${this.formation} | velocidad: ${this.droneSpeed.toFixed(1)} | HP: ${this.droneHP}`);
+  }
+
+  getFormationOffsets(count) {
+    const offsets = [];
+    switch (this.formation) {
+      case 'line':
+        for (let i = 0; i < count; i++) offsets.push({ x: (i - count/2) * 60, y: 0 });
+        break;
+      case 'wedge':
+        for (let i = 0; i < count; i++) {
+          const row = Math.floor(i / 3);
+          const col = i % 3 - 1;
+          offsets.push({ x: col * 50 - row * 25, y: row * 40 });
+        }
+        break;
+      case 'pincer':
+        for (let i = 0; i < count; i++) {
+          const side = i % 2 === 0 ? -1 : 1;
+          offsets.push({ x: side * (80 + Math.floor(i/2) * 50), y: Math.floor(i/2) * 30 });
+        }
+        break;
+      case 'swarm':
+        for (let i = 0; i < count; i++) offsets.push({
+          x: (Math.random() - 0.5) * 300,
+          y: (Math.random() - 0.5) * 100,
+        });
+        break;
+      default: // scatter
+        for (let i = 0; i < count; i++) offsets.push({
+          x: (Math.random() - 0.5) * 200,
+          y: (Math.random() - 0.5) * 60,
+        });
+    }
+    return offsets;
+  }
+}
+
+// ── Clases de entidades ──────────────────────────────────────────────────────
+class Drone {
+  constructor(x, y, speed, hp, ai) {
+    this.x      = x;
+    this.y      = y;
+    this.speed  = speed * (0.8 + Math.random() * 0.4);
+    this.maxHP  = hp;
+    this.hp     = hp;
+    this.r      = 10 + hp * 2;
+    this.angle  = Math.PI / 2;
+    this.wobble = Math.random() * Math.PI * 2;
+    this.wobbleSpeed = 0.02 + Math.random() * 0.03;
+    this.alive  = true;
+    this.ai     = ai;
+    // Target: station center
+    this.tx = W / 2 + (Math.random() - 0.5) * 100;
+    this.ty = H - 80;
+    // Zigzag when adapted
+    this.zigzag = ai.adapt > 50;
+    this.zigzagDir = 1;
+    this.zigzagTimer = 0;
+  }
+
+  update() {
+    if (!this.alive) return;
+    this.wobble += this.wobbleSpeed;
+    this.zigzagTimer++;
+
+    if (this.zigzag && this.zigzagTimer % 60 === 0) this.zigzagDir *= -1;
+
+    const dx = this.tx - this.x;
+    const dy = this.ty - this.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > 2) {
+      this.x += (dx / dist) * this.speed + (this.zigzag ? this.zigzagDir * 0.8 : 0);
+      this.y += (dy / dist) * this.speed;
+      this.angle = Math.atan2(dy, dx) + Math.PI / 2;
+    }
+
+    // Shoot at station
+    if (Math.random() < 0.004 + this.ai.adapt * 0.00004) {
+      state.addEnemyShot(this.x, this.y);
+    }
+  }
+
+  draw() {
+    if (!this.alive) return;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.angle);
+
+    // HP bar
+    const hpPct = this.hp / this.maxHP;
+    const barW  = this.r * 2.5;
+    ctx.fillStyle = '#220000';
+    ctx.fillRect(-barW/2, -this.r - 8, barW, 4);
+    ctx.fillStyle = hpPct > 0.5 ? '#00ff88' : hpPct > 0.25 ? '#ffaa00' : '#ff4444';
+    ctx.fillRect(-barW/2, -this.r - 8, barW * hpPct, 4);
+
+    // Body
+    const glow = 0.4 + 0.3 * Math.sin(this.wobble);
+    ctx.shadowColor = '#ff2200';
+    ctx.shadowBlur  = 12 * glow;
+
+    // Drone shape
+    ctx.beginPath();
+    ctx.moveTo(0, -this.r);
+    ctx.lineTo(this.r * 0.7, this.r * 0.4);
+    ctx.lineTo(0, this.r * 0.2);
+    ctx.lineTo(-this.r * 0.7, this.r * 0.4);
+    ctx.closePath();
+    ctx.fillStyle = `rgba(200,30,0,${0.7 + 0.2 * glow})`;
+    ctx.fill();
+
+    // Core
+    ctx.beginPath();
+    ctx.arc(0, 0, this.r * 0.3, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff6600';
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+
+  hit(dmg) {
+    this.hp -= dmg;
+    if (this.hp <= 0) {
+      this.alive = false;
+      this.ai.recordDeath(this.x);
+      return true;
+    }
+    return false;
+  }
+
+  reachesStation() {
+    return this.y > H - 100 && Math.abs(this.x - W/2) < 120;
+  }
+}
+
+class Bullet {
+  constructor(x, y, tx, ty, isEnemy = false) {
+    this.x       = x;
+    this.y       = y;
+    const angle  = Math.atan2(ty - y, tx - x);
+    const speed  = isEnemy ? 4 : 9;
+    this.vx      = Math.cos(angle) * speed;
+    this.vy      = Math.sin(angle) * speed;
+    this.alive   = true;
+    this.isEnemy = isEnemy;
+    this.r       = isEnemy ? 3 : 4;
+    this.trail   = [];
+  }
+
+  update() {
+    this.trail.push({ x: this.x, y: this.y });
+    if (this.trail.length > 6) this.trail.shift();
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.alive = false;
+  }
+
+  draw() {
+    // Trail
+    this.trail.forEach((p, i) => {
+      const a = i / this.trail.length * 0.4;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, this.r * 0.5, 0, Math.PI * 2);
+      ctx.fillStyle = this.isEnemy
+        ? `rgba(255,100,0,${a})`
+        : `rgba(0,255,136,${a})`;
+      ctx.fill();
+    });
+    // Bullet
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle   = this.isEnemy ? '#ff6600' : '#00ff88';
+    ctx.shadowColor = this.isEnemy ? '#ff4400' : '#00ff88';
+    ctx.shadowBlur  = 10;
+    ctx.fill();
+    ctx.shadowBlur  = 0;
+  }
+}
+
+class Particle {
+  constructor(x, y, color) {
+    this.x     = x;
+    this.y     = y;
+    const ang  = Math.random() * Math.PI * 2;
+    const spd  = 1 + Math.random() * 6;
+    this.vx    = Math.cos(ang) * spd;
+    this.vy    = Math.sin(ang) * spd - 2;
+    this.life  = 1;
+    this.decay = 0.02 + Math.random() * 0.04;
+    this.r     = 1 + Math.random() * 3;
+    this.color = color;
+  }
+
+  update() {
+    this.x    += this.vx;
+    this.y    += this.vy;
+    this.vy   += 0.1;
+    this.life -= this.decay;
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.globalAlpha = this.life;
+    ctx.fillStyle   = this.color;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+class Star {
+  constructor() { this.reset(true); }
+  reset(init = false) {
+    this.x = Math.random() * W;
+    this.y = init ? Math.random() * H : 0;
+    this.speed = 0.2 + Math.random() * 0.8;
+    this.r     = Math.random() * 1.5;
+    this.bright = Math.random();
+  }
+  update() { this.y += this.speed; if (this.y > H) this.reset(); }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${0.3 + this.bright * 0.5})`;
+    ctx.fill();
+  }
+}
+
+// ── Estado del juego ─────────────────────────────────────────────────────────
+class GameState {
+  constructor() {
+    this.ai         = new BlackbirdAI();
+    this.drones     = [];
+    this.bullets    = [];
+    this.particles  = [];
+    this.stars      = Array.from({ length: 120 }, () => new Star());
+    this.wave       = 1;
+    this.score      = 0;
+    this.shield     = 100;
+    this.bombs      = 3;
+    this.running    = true;
+    this.mx         = W / 2;
+    this.my         = H / 2;
+    this.frameCount = 0;
+    this.waveTimer  = 0;
+    this.betweenWaves = false;
+    this.stationFlash = 0;
+    this.spawnWave();
+  }
+
+  spawnWave() {
+    const count   = this.ai.droneCount;
+    const offsets = this.ai.getFormationOffsets(count);
+    const cx      = this.ai.getSpawnX();
+    offsets.forEach((off, i) => {
+      setTimeout(() => {
+        if (!state || !state.running) return;
+        const x = Math.max(20, Math.min(W-20, cx + off.x));
+        const y = Math.max(-150, -60 + (off.y || 0));
+        state.drones.push(new Drone(x, y, state.ai.droneSpeed, state.ai.droneHP, state.ai));
+      }, i * 200);
+    });
+    log(`Oleada ${this.wave} — ${count} drones — formación: ${this.ai.formation} — gen.IA ${this.ai.generation}`);
+  }
+
+  shoot(tx, ty) {
+    this.bullets.push(new Bullet(W/2, H - 70, tx, ty, false));
+    this.ai.recordShot(tx);
+  }
+
+  bomb() {
+    if (this.bombs <= 0) return;
+    this.bombs--;
+    this.drones.forEach(d => {
+      if (!d.alive) return;
+      this.explode(d.x, d.y, '#ff8800');
+      d.alive = false;
+      this.score += 50;
+      this.ai.recordDeath(d.x);
+    });
+    this.drones = [];
+    // Shockwave particles
+    for (let i = 0; i < 60; i++) {
+      this.particles.push(new Particle(W/2, H/2, '#ffaa00'));
+    }
+    log(`BOMBA activada! ${this.bombs} restantes`);
+  }
+
+  addEnemyShot(x, y) {
+    this.bullets.push(new Bullet(x, y, W/2, H - 70, true));
+  }
+
+  explode(x, y, color) {
+    for (let i = 0; i < 18; i++) this.particles.push(new Particle(x, y, color));
+    for (let i = 0; i < 8;  i++) this.particles.push(new Particle(x, y, '#ffffff'));
+  }
+
+  update() {
+    if (!this.running) return;
+    this.frameCount++;
+    this.waveTimer++;
+
+    // Stars
+    this.stars.forEach(s => s.update());
+
+    // Drones
+    this.drones.forEach(d => {
+      d.update();
+      if (d.alive && d.reachesStation()) {
+        d.alive = false;
+        this.shield -= 15 + this.ai.droneHP * 3;
+        this.stationFlash = 15;
+        this.explode(W/2, H - 80, '#ff2200');
+        log(`¡Drone impacta la estación! Escudo: ${Math.round(this.shield)}%`);
+      }
+    });
+
+    // Bullets
+    this.bullets.forEach(b => {
+      b.update();
+      if (!b.alive) return;
+      if (!b.isEnemy) {
+        // Player bullet vs drones
+        this.drones.forEach(d => {
+          if (!d.alive || !b.alive) return;
+          if (Math.hypot(b.x - d.x, b.y - d.y) < d.r + b.r) {
+            const killed = d.hit(1);
+            b.alive = false;
+            if (killed) {
+              this.explode(d.x, d.y, '#ff4400');
+              this.score += 10 * this.wave;
+            } else {
+              this.explode(d.x, d.y, '#ff8800');
+              this.particles.push(new Particle(d.x, d.y, '#ffaa00'));
+            }
+          }
+        });
+      } else {
+        // Enemy bullet vs station
+        if (b.y > H - 100 && Math.abs(b.x - W/2) < 100) {
+          b.alive = false;
+          this.shield -= 3;
+          this.stationFlash = 8;
+          this.explode(b.x, H - 80, '#ff2200');
+        }
+      }
+    });
+
+    // Particles
+    this.particles.forEach(p => p.update());
+
+    // Cleanup
+    this.drones    = this.drones.filter(d => d.alive);
+    this.bullets   = this.bullets.filter(b => b.alive);
+    this.particles = this.particles.filter(p => p.life > 0);
+
+    // Wave complete
+    if (this.drones.length === 0 && !this.betweenWaves) {
+      this.betweenWaves = true;
+      const bonus = 100 * this.wave;
+      this.score += bonus;
+      log(`Oleada ${this.wave} completada! +${bonus} puntos. Preparando evolución IA...`);
+      setTimeout(() => {
+        if (!state || !state.running) return;
+        this.wave++;
+        this.ai.evolve();
+        this.betweenWaves = false;
+        this.spawnWave();
+      }, 2500);
+    }
+
+    // Game over
+    if (this.shield <= 0) {
+      this.running = false;
+      this.shield  = 0;
+      setTimeout(() => showGameOver(), 1000);
+    }
+
+    if (this.stationFlash > 0) this.stationFlash--;
+
+    ui(this.wave, this.score, this.shield, this.ai.generation, this.ai.adapt);
+  }
+
+  draw() {
+    // Background
+    ctx.fillStyle = '#000008';
+    ctx.fillRect(0, 0, W, H);
+
+    // Stars
+    this.stars.forEach(s => s.draw());
+
+    // Nebula
+    const neb = ctx.createRadialGradient(W*0.3, H*0.2, 0, W*0.3, H*0.2, 300);
+    neb.addColorStop(0, 'rgba(0,20,60,0.15)');
+    neb.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = neb;
+    ctx.fillRect(0, 0, W, H);
+
+    const neb2 = ctx.createRadialGradient(W*0.8, H*0.6, 0, W*0.8, H*0.6, 200);
+    neb2.addColorStop(0, 'rgba(40,0,60,0.12)');
+    neb2.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = neb2;
+    ctx.fillRect(0, 0, W, H);
+
+    // Station
+    this.drawStation();
+
+    // Entities
+    this.particles.forEach(p => p.draw());
+    this.drones.forEach(d => d.draw());
+    this.bullets.forEach(b => b.draw());
+
+    // Crosshair
+    this.drawCrosshair();
+
+    // Shield bar
+    this.drawShieldBar();
+
+    // Bomb counter
+    ctx.fillStyle = '#336633';
+    ctx.font      = '11px JetBrains Mono, monospace';
+    ctx.fillText(`BOMBAS: ${'◆'.repeat(this.bombs)}${'◇'.repeat(Math.max(0,3-this.bombs))}`, 12, H - 12);
+
+    // Wave flash
+    if (this.betweenWaves && Math.floor(this.frameCount / 15) % 2 === 0) {
+      ctx.fillStyle = 'rgba(0,255,136,0.08)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle   = '#00ff88';
+      ctx.font        = 'bold 22px JetBrains Mono, monospace';
+      ctx.textAlign   = 'center';
+      ctx.fillText(`OLEADA ${this.wave - 1} COMPLETADA`, W/2, H/2 - 14);
+      ctx.font        = '12px JetBrains Mono, monospace';
+      ctx.fillStyle   = '#336633';
+      ctx.fillText(`IA evolucionando... generación ${this.ai.generation}`, W/2, H/2 + 12);
+      ctx.textAlign   = 'left';
+    }
+  }
+
+  drawStation() {
+    const cx = W / 2, cy = H - 70;
+    const flash = this.stationFlash > 0;
+
+    // Shield ring
+    const shieldAlpha = this.shield / 100 * 0.4;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 80, 0, Math.PI * 2);
+    ctx.strokeStyle = flash
+      ? `rgba(255,50,0,${shieldAlpha + 0.3})`
+      : `rgba(0,255,136,${shieldAlpha})`;
+    ctx.lineWidth   = 2;
+    ctx.shadowColor = flash ? '#ff2200' : '#00ff88';
+    ctx.shadowBlur  = flash ? 20 : 8;
+    ctx.stroke();
+    ctx.shadowBlur  = 0;
+
+    // Rotating rings
+    const t = this.frameCount * 0.01;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(t);
+    ctx.strokeStyle = 'rgba(0,255,136,0.15)';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 55, 15, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-t * 1.5);
+    ctx.strokeStyle = 'rgba(0,180,255,0.1)';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 40, 10, 0.5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // Solar panels
+    ctx.fillStyle = flash ? '#ff4400' : '#003322';
+    ctx.fillRect(cx - 70, cy - 6, 40, 12);
+    ctx.fillRect(cx + 30, cy - 6, 40, 12);
+    ctx.strokeStyle = flash ? '#ff8800' : '#00ff88';
+    ctx.lineWidth   = 1;
+    for (let i = 0; i < 4; i++) {
+      ctx.strokeRect(cx - 70 + i*10, cy - 6, 10, 12);
+      ctx.strokeRect(cx + 30 + i*10, cy - 6, 10, 12);
+    }
+
+    // Main body
+    ctx.fillStyle   = flash ? '#440000' : '#001a10';
+    ctx.strokeStyle = flash ? '#ff4400' : '#00ff88';
+    ctx.lineWidth   = 1.5;
+    ctx.shadowColor = flash ? '#ff2200' : '#00ff88';
+    ctx.shadowBlur  = flash ? 20 : 6;
+    ctx.beginPath();
+    ctx.roundRect(cx - 20, cy - 18, 40, 36, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    // Cannon
+    ctx.fillStyle   = '#00ff88';
+    ctx.shadowColor = '#00ff88';
+    ctx.shadowBlur  = 10;
+    ctx.beginPath();
+    ctx.roundRect(cx - 4, cy - 30, 8, 16, 3);
+    ctx.fill();
+
+    // Core glow
+    ctx.beginPath();
+    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+    ctx.fillStyle = flash ? '#ff6600' : '#00ffaa';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // BLACKBIRD label
+    ctx.fillStyle = flash ? '#ff4400' : 'rgba(0,255,136,0.5)';
+    ctx.font      = '8px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('BLACKBIRD-1', cx, cy + 28);
+    ctx.textAlign = 'left';
+  }
+
+  drawCrosshair() {
+    const x = this.mx, y = this.my;
+    ctx.strokeStyle = 'rgba(0,255,136,0.7)';
+    ctx.lineWidth   = 1;
+    ctx.shadowColor = '#00ff88';
+    ctx.shadowBlur  = 4;
+    const s = 12;
+    ctx.beginPath();
+    ctx.moveTo(x - s, y); ctx.lineTo(x - 4, y);
+    ctx.moveTo(x + 4, y); ctx.lineTo(x + s, y);
+    ctx.moveTo(x, y - s); ctx.lineTo(x, y - 4);
+    ctx.moveTo(x, y + 4); ctx.lineTo(x, y + s);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.strokeStyle = '#00ff88';
+    ctx.stroke();
+    ctx.shadowBlur  = 0;
+  }
+
+  drawShieldBar() {
+    const bw = 200, bh = 6;
+    const bx = W/2 - bw/2, by = H - 16;
+    ctx.fillStyle = '#001a10';
+    ctx.fillRect(bx, by, bw, bh);
+    const pct   = Math.max(0, this.shield) / 100;
+    const color = pct > 0.5 ? '#00ff88' : pct > 0.25 ? '#ffaa00' : '#ff4444';
+    ctx.fillStyle   = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur  = 6;
+    ctx.fillRect(bx, by, bw * pct, bh);
+    ctx.shadowBlur  = 0;
+    ctx.fillStyle   = 'rgba(0,255,136,0.3)';
+    ctx.font        = '9px JetBrains Mono, monospace';
+    ctx.textAlign   = 'center';
+    ctx.fillText('ESCUDO', W/2, by - 3);
+    ctx.textAlign   = 'left';
+  }
+}
+
+function showGameOver() {
+  overlay.innerHTML = `
+    <h1 style="color:#ff4444">ESTACIÓN DESTRUIDA</h1>
+    <p style="color:#663333">// La IA alcanzó gen.${state.ai.generation} — adaptación ${Math.round(state.ai.adapt)}%</p>
+    <p style="color:#336633;margin-bottom:20px">// Score final: ${state.score}</p>
+    <button id="start-btn" onclick="startGame()" style="border-color:rgba(255,68,68,0.4);color:#ff8888">↺ NUEVA MISIÓN</button>`;
+  overlay.style.display = 'flex';
+}
+
+// ── Loop ─────────────────────────────────────────────────────────────────────
+function loop() {
+  if (state) { state.update(); state.draw(); }
+  raf = requestAnimationFrame(loop);
+}
+
+function startGame() {
+  overlay.style.display = 'none';
+  if (raf) cancelAnimationFrame(raf);
+  state = new GameState();
+  loop();
+}
+
+// ── Input ────────────────────────────────────────────────────────────────────
+canvas.addEventListener('mousemove', e => {
+  if (!state) return;
+  const r = canvas.getBoundingClientRect();
+  state.mx = (e.clientX - r.left) / r.width  * W;
+  state.my = (e.clientY - r.top)  / r.height * H;
+});
+
+canvas.addEventListener('click', e => {
+  if (!state || !state.running) return;
+  const r = canvas.getBoundingClientRect();
+  const tx = (e.clientX - r.left) / r.width  * W;
+  const ty = (e.clientY - r.top)  / r.height * H;
+  state.shoot(tx, ty);
+});
+
+canvas.addEventListener('touchmove', e => {
+  if (!state) return;
+  e.preventDefault();
+  const r = canvas.getBoundingClientRect();
+  const t = e.touches[0];
+  state.mx = (t.clientX - r.left) / r.width  * W;
+  state.my = (t.clientY - r.top)  / r.height * H;
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+  if (!state || !state.running) return;
+  e.preventDefault();
+  const r = canvas.getBoundingClientRect();
+  const t = e.changedTouches[0];
+  const tx = (t.clientX - r.left) / r.width  * W;
+  const ty = (t.clientY - r.top)  / r.height * H;
+  state.shoot(tx, ty);
+}, { passive: false });
+
+document.addEventListener('keydown', e => {
+  if (!state || !state.running) return;
+  if (e.key === ' ' || e.key === 'b') state.bomb();
+});
+
+function mobileShoot(e) {
+  e.preventDefault();
+  if (!state || !state.running) return;
+  const targets = state.drones.filter(d => d.alive);
+  if (targets.length) {
+    const t = targets[Math.floor(Math.random() * targets.length)];
+    state.shoot(t.x, t.y);
+  } else {
+    state.shoot(W/2, 0);
+  }
+}
+
+function mobileBomb(e) {
+  e.preventDefault();
+  if (state && state.running) state.bomb();
+}
+
+// ── Draw idle ────────────────────────────────────────────────────────────────
+(function drawIdle() {
+  ctx.fillStyle = '#000008';
+  ctx.fillRect(0, 0, W, H);
+  for (let i = 0; i < 100; i++) {
+    ctx.beginPath();
+    ctx.arc(Math.random()*W, Math.random()*H, Math.random()*1.5, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,255,255,${Math.random()*0.6})`;
+    ctx.fill();
+  }
+})();
+</script>
+</body>
+</html>

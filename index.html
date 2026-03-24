@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLACKBIRD TECH — SR-71</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:   #080808;
+    --deep:    #0d0d0d;
+    --panel:   #111111;
+    --border:  #1e1e1e;
+    --amber:   #e8a020;
+    --amber2:  #f5c842;
+    --dim:     #444444;
+    --muted:   #666666;
+    --text:    #c8c8c8;
+    --green:   #2ecc71;
+    --red:     #e74c3c;
+    --mono:    'Share Tech Mono', monospace;
+    --sans:    'Barlow', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.15) 2px,
+      rgba(0,0,0,0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* Subtle noise texture */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 99;
+    opacity: 0.4;
+  }
+
+  .wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 52px;
+    animation: fadeUp .6s ease both;
+  }
+
+  .logo-block {}
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .tagline {
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .tagline span {
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    white-space: nowrap;
+    margin-top: 4px;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(46,204,113,0.4); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(46,204,113,0); }
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, var(--amber) 0%, transparent 60%);
+    margin-bottom: 40px;
+    animation: fadeUp .6s .1s ease both;
+  }
+
+  /* Metric grid */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 32px;
+    animation: fadeUp .6s .15s ease both;
+  }
+
+  .metric {
+    background: var(--panel);
+    padding: 24px 20px;
+    position: relative;
+  }
+
+  .metric::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--amber);
+    opacity: 0;
+    transition: opacity .3s;
+  }
+
+  .metric:hover::after { opacity: 1; }
+
+  .metric-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .metric-value {
+    font-family: var(--mono);
+    font-size: 28px;
+    color: var(--amber2);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .metric-value.small { font-size: 18px; }
+
+  .metric-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* Log terminal */
+  .terminal {
+    background: var(--deep);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 32px;
+    animation: fadeUp .6s .2s ease both;
+  }
+
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .terminal-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .td-r { background: #3a1a1a; }
+  .td-y { background: #3a3010; }
+  .td-g { background: #1a3a1a; }
+
+  .terminal-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 4px;
+    letter-spacing: 0.08em;
+  }
+
+  .terminal-body {
+    padding: 20px 20px 16px;
+    min-height: 140px;
+  }
+
+  .log-line {
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 2;
+    color: var(--dim);
+    opacity: 0;
+    animation: logAppear .3s ease forwards;
+  }
+
+  .log-line.active { color: var(--text); }
+  .log-line .ts { color: var(--muted); margin-right: 12px; }
+  .log-line .tag-ok  { color: var(--green); }
+  .log-line .tag-info { color: var(--amber); }
+  .log-line .tag-scan { color: #5ba3f5; }
+
+  @keyframes logAppear {
+    from { opacity: 0; transform: translateX(-4px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Macro panel */
+  .macro-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+    margin-bottom: 32px;
+    animation: fadeUp .6s .25s ease both;
+  }
+
+  .panel-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .macro-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .macro-item {}
+
+  .macro-item-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .macro-item-value {
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--text);
+  }
+
+  .macro-item-value .up   { color: var(--red); }
+  .macro-item-value .down { color: var(--green); }
+  .macro-item-value .neutral { color: var(--muted); }
+
+  .macro-conclusion {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  .macro-conclusion .signal {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin-right: 10px;
+  }
+
+  .signal-green  { background: rgba(46,204,113,0.12); color: var(--green); border: 1px solid rgba(46,204,113,0.2); }
+  .signal-amber  { background: rgba(232,160,32,0.12); color: var(--amber); border: 1px solid rgba(232,160,32,0.2); }
+  .signal-red    { background: rgba(231,76,60,0.12);  color: var(--red);   border: 1px solid rgba(231,76,60,0.2); }
+
+  /* Footer */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    animation: fadeUp .6s .35s ease both;
+  }
+
+  .footer-left {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  .footer-right {
+    font-size: 12px;
+    color: var(--dim);
+    font-weight: 300;
+  }
+
+  /* SR-71 silhouette decorative */
+  .sr71-deco {
+    position: fixed;
+    bottom: -20px;
+    right: -40px;
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    .metrics { grid-template-columns: 1fr 1fr; }
+    .macro-grid { grid-template-columns: 1fr 1fr; }
+    .header { flex-direction: column; gap: 16px; }
+    .tagline { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<svg class="sr71-deco" width="600" height="200" viewBox="0 0 600 200">
+  <path d="M0,120 L200,80 L280,60 L320,55 L400,60 L580,100 L600,110 L580,115 L400,70 L320,65 L280,70 L200,90 L20,130 Z" fill="white"/>
+  <path d="M280,60 L320,20 L340,55 L280,60 Z" fill="white"/>
+  <path d="M200,80 L240,40 L260,75 L200,80 Z" fill="white"/>
+</svg>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-block">
+      <div class="logo">Blackbird Tech · SR-71</div>
+      <div class="tagline">Inteligencia artificial<br><span>operando el mercado.</span></div>
+    </div>
+    <div class="status-pill">
+      <div class="dot"></div>
+      SISTEMA ACTIVO
+    </div>
+  </header>
+
+  <div class="divider"></div>
+
+  <!-- Métricas -->
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Último scan</div>
+      <div class="metric-value small" id="last-scan">—</div>
+      <div class="metric-sub">hace <span id="scan-ago">—</span></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Mercados monitoreados</div>
+      <div class="metric-value">4</div>
+      <div class="metric-sub">exchanges activos</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">USD / CLP</div>
+      <div class="metric-value small" id="usdclp-val">—</div>
+      <div class="metric-sub" id="usdclp-delta">cargando...</div>
+    </div>
+  </div>
+
+  <!-- Terminal log -->
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="terminal-dot td-r"></div>
+      <div class="terminal-dot td-y"></div>
+      <div class="terminal-dot td-g"></div>
+      <span class="terminal-title">blackbird · log en vivo</span>
+    </div>
+    <div class="terminal-body" id="log-body"></div>
+  </div>
+
+  <!-- Panel macro -->
+  <div class="macro-panel">
+    <div class="panel-label">Contexto de mercado</div>
+    <div class="macro-grid">
+      <div class="macro-item">
+        <div class="macro-item-label">USD/CLP oficial</div>
+        <div class="macro-item-value" id="m-usdclp">—</div>
+      </div>
+      <div class="macro-item">
+        <div class="macro-item-label">Cobre (USD/lb)</div>
+        <div class="macro-item-value" id="m-cobre">—</div>
+      </div>
+      <div class="macro-item">
+        <div class="macro-item-label">VIX</div>
+        <div class="macro-item-value" id="m-vix">—</div>
+      </div>
+    </div>
+    <div class="macro-conclusion" id="m-conclusion">
+      <span class="signal signal-amber" id="m-signal">CARGANDO</span>
+      Obteniendo datos de mercado...
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-left">BLACKBIRD TECH · SANTIAGO, CL</div>
+    <div class="footer-right">sr71.cl</div>
+  </footer>
+
+</div>
+
+<script>
+// ── Config ──────────────────────────────────────────────────────────────────
+const MINDICADOR_URL = 'https://mindicador.cl/api/dolar';
+const STOOQ_COBRE    = 'https://stooq.com/q/l/?s=hg.f&f=sd2t2ohlcv&h&e=csv';
+const STOOQ_VIX      = 'https://stooq.com/q/l/?s=^vix&f=sd2t2ohlcv&h&e=csv';
+const REFRESH_MIN    = 5; // minutos entre actualizaciones
+
+// ── Estado ──────────────────────────────────────────────────────────────────
+let lastScan   = null;
+let scanCount  = 0;
+
+// ── Logs ────────────────────────────────────────────────────────────────────
+const logs = [];
+const MAX_LOGS = 7;
+
+function addLog(tag, tagClass, msg) {
+  const now = new Date();
+  const ts  = now.toTimeString().slice(0,8);
+  logs.push({ ts, tag, tagClass, msg });
+  if (logs.length > MAX_LOGS) logs.shift();
+  renderLogs();
+}
+
+function renderLogs() {
+  const body = document.getElementById('log-body');
+  body.innerHTML = logs.map((l, i) => `
+    <div class="log-line active" style="animation-delay:${i*0.05}s">
+      <span class="ts">${l.ts}</span>
+      <span class="${l.tagClass}">[${l.tag}]</span>
+      &nbsp;${l.msg}
+    </div>
+  `).join('');
+}
+
+// ── USD/CLP ─────────────────────────────────────────────────────────────────
+async function fetchUSDCLP() {
+  try {
+    const r    = await fetch(MINDICADOR_URL);
+    const data = await r.json();
+    const serie = data.serie || [];
+    if (serie.length >= 2) {
+      const hoy  = serie[0].valor;
+      const ayer = serie[1].valor;
+      const d    = hoy - ayer;
+      const pct  = (d / ayer * 100).toFixed(1);
+      const arrow = d >= 0 ? '▲' : '▼';
+      const cls   = d >= 0 ? 'up' : 'down';
+
+      document.getElementById('usdclp-val').textContent = '$' + Math.round(hoy).toLocaleString('es-CL');
+      document.getElementById('usdclp-delta').textContent = `${arrow} ${Math.abs(d).toFixed(0)} hoy`;
+      document.getElementById('m-usdclp').innerHTML =
+        `$${Math.round(hoy).toLocaleString('es-CL')} <span class="${cls}">${arrow}${Math.abs(d).toFixed(0)}</span>`;
+
+      return { hoy, ayer, delta: d, pct: parseFloat(pct) };
+    }
+  } catch(e) {
+    addLog('ERR', 'tag-info', 'USD/CLP no disponible');
+  }
+  return null;
+}
+
+// ── Cobre ────────────────────────────────────────────────────────────────────
+async function fetchCobre() {
+  try {
+    const r    = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(STOOQ_COBRE)}`);
+    const text = await r.text();
+    const lines = text.trim().split('\n');
+    if (lines.length >= 2) {
+      const cols  = lines[1].split(',');
+      const close = parseFloat(cols[4]);
+      const open  = parseFloat(cols[2]);
+      const pct   = ((close - open) / open * 100).toFixed(1);
+      const arrow = close >= open ? '▲' : '▼';
+      const cls   = close >= open ? 'up' : 'down';
+      document.getElementById('m-cobre').innerHTML =
+        `$${close.toFixed(3)} <span class="${cls}">${arrow}${Math.abs(pct)}%</span>`;
+      return { precio: close, pct: parseFloat(pct) };
+    }
+  } catch(e) {}
+  document.getElementById('m-cobre').textContent = 'no disp.';
+  return null;
+}
+
+// ── VIX ──────────────────────────────────────────────────────────────────────
+async function fetchVIX() {
+  try {
+    const r    = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(STOOQ_VIX)}`);
+    const text = await r.text();
+    const lines = text.trim().split('\n');
+    if (lines.length >= 2) {
+      const cols  = lines[1].split(',');
+      const valor = parseFloat(cols[4]);
+      let nivel, cls;
+      if      (valor < 15) { nivel = 'calma';   cls = 'down';    }
+      else if (valor < 20) { nivel = 'normal';  cls = 'neutral'; }
+      else if (valor < 30) { nivel = 'alerta';  cls = 'up';      }
+      else                  { nivel = 'pánico';  cls = 'up';      }
+      document.getElementById('m-vix').innerHTML =
+        `<span class="${cls}">${valor.toFixed(1)}</span> <span style="font-size:12px;color:var(--muted)">${nivel}</span>`;
+      return { valor, nivel };
+    }
+  } catch(e) {}
+  document.getElementById('m-vix').textContent = 'no disp.';
+  return null;
+}
+
+// ── Interpretación ───────────────────────────────────────────────────────────
+function interpretar(usdclp, cobre, vix) {
+  let puntos = 0;
+  const razones = [];
+
+  if (usdclp?.delta > 5)        { puntos += 2; razones.push(`dólar subió $${Math.round(usdclp.delta)} hoy`); }
+  else if (usdclp?.delta < -5)  { puntos -= 2; razones.push(`dólar bajó $${Math.round(Math.abs(usdclp.delta))} hoy`); }
+
+  if (cobre?.pct < -1)           { puntos += 1; razones.push(`cobre bajando ${cobre.pct.toFixed(1)}%`); }
+  else if (cobre?.pct > 1)       { puntos -= 1; razones.push(`cobre subiendo ${cobre.pct.toFixed(1)}%`); }
+
+  if (vix?.valor > 25)           { puntos += 2; razones.push(`VIX elevado (${vix.valor.toFixed(1)})`); }
+  else if (vix?.valor > 18)      { puntos += 1; razones.push(`VIX en alerta`); }
+
+  let signal, signalClass, texto;
+  if (puntos >= 3)      { signal = 'FAVORABLE';  signalClass = 'signal-green'; texto = 'Condiciones favorables para operaciones en dólares.'; }
+  else if (puntos >= 1) { signal = 'NEUTRO+';    signalClass = 'signal-amber'; texto = 'Mercado con leve presión alcista sobre el dólar.'; }
+  else if (puntos <= -2){ signal = 'PRECAUCIÓN'; signalClass = 'signal-red';   texto = 'Peso fortaleciéndose — monitorear antes de operar.'; }
+  else                  { signal = 'NEUTRO';     signalClass = 'signal-amber'; texto = 'Mercado estable sin señales claras por ahora.'; }
+
+  const detalle = razones.length ? ' ' + razones.join(', ') + '.' : '';
+
+  document.getElementById('m-signal').textContent    = signal;
+  document.getElementById('m-signal').className      = `signal ${signalClass}`;
+  document.getElementById('m-conclusion').innerHTML  =
+    `<span class="signal ${signalClass}" id="m-signal">${signal}</span>${texto}${detalle}`;
+}
+
+// ── Actualización del timestamp ───────────────────────────────────────────────
+function updateScanTime() {
+  if (!lastScan) return;
+  const diff = Math.floor((Date.now() - lastScan) / 1000);
+  let ago;
+  if      (diff < 60)   ago = `${diff}s`;
+  else if (diff < 3600) ago = `${Math.floor(diff/60)}min`;
+  else                  ago = `${Math.floor(diff/3600)}h`;
+  document.getElementById('scan-ago').textContent = ago;
+  document.getElementById('last-scan').textContent =
+    new Date(lastScan).toTimeString().slice(0,8);
+}
+
+// ── Ciclo principal ──────────────────────────────────────────────────────────
+async function ciclo() {
+  scanCount++;
+  lastScan = Date.now();
+  addLog('SYS', 'tag-ok', `ciclo #${scanCount} iniciado`);
+
+  const [usdclp, cobre, vix] = await Promise.all([
+    fetchUSDCLP(),
+    fetchCobre(),
+    fetchVIX(),
+  ]);
+
+  interpretar(usdclp, cobre, vix);
+
+  if (usdclp)  addLog('USD', 'tag-scan', `CLP $${Math.round(usdclp.hoy).toLocaleString('es-CL')} · delta ${usdclp.delta >= 0 ? '+' : ''}${usdclp.delta.toFixed(0)}`);
+  if (cobre)   addLog('CU',  'tag-scan', `cobre $${cobre.precio.toFixed(3)}/lb · ${cobre.pct >= 0 ? '+' : ''}${cobre.pct.toFixed(1)}%`);
+  if (vix)     addLog('VIX', 'tag-scan', `${vix.valor.toFixed(1)} · ${vix.nivel}`);
+
+  addLog('SYS', 'tag-ok', `siguiente actualización en ${REFRESH_MIN}min`);
+  updateScanTime();
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+addLog('SYS', 'tag-ok',   'blackbird tech · sistema iniciado');
+addLog('NET', 'tag-info', 'conectando fuentes de datos...');
+
+ciclo();
+setInterval(ciclo, REFRESH_MIN * 60 * 1000);
+setInterval(updateScanTime, 10000);
+</script>
+</body>
+</html>
