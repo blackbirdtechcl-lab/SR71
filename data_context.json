@@ -1,13 +1,13 @@
 {
-  "generado_en": "2026-03-24T21:40:58.919049-03:00",
-  "generado_en_legible": "24/03/2026 21:40 Chile",
+  "generado_en": "2026-03-24T21:46:00.854978-03:00",
+  "generado_en_legible": "24/03/2026 21:46 Chile",
   "empresa": "Blackbird Tech SpA",
   "fundador": "Allinstainer",
   "servidor": "Hetzner CX33 Helsinki 204.168.154.87",
   "infraestructura": {
     "disco_pct": 6,
-    "memoria_pct": 16,
-    "uptime": "up 6 hours, 57 minutes",
+    "memoria_pct": 15,
+    "uptime": "up 7 hours, 2 minutes",
     "servidor": "Hetzner CX33 Helsinki"
   },
   "servicios": {
@@ -37,8 +37,8 @@
     }
   },
   "btc": {
-    "precio": 70931.07,
-    "cambio_24h_pct": 0.394,
+    "precio": 70896.52,
+    "cambio_24h_pct": 0.368,
     "high_24h": 71400.0,
     "low_24h": 68923.07
   },
@@ -63,7 +63,7 @@
     }
   },
   "p2p_spread": {
-    "spread_pct": 0.891,
+    "spread_pct": 0.888,
     "mejor_compra": [
       "okx"
     ],
