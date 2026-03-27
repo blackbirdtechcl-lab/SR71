@@ -1,13 +1,13 @@
 {
-  "generado_en": "2026-03-27T15:03:53.141694-03:00",
-  "generado_en_legible": "27/03/2026 15:03 Chile",
+  "generado_en": "2026-03-27T15:08:55.113178-03:00",
+  "generado_en_legible": "27/03/2026 15:08 Chile",
   "empresa": "Blackbird Tech SpA",
   "fundador": "Allinstainer",
   "servidor": "Hetzner CX33 Helsinki 204.168.154.87",
   "infraestructura": {
     "disco_pct": 7,
     "memoria_pct": 16,
-    "uptime": "up 3 days, 20 minutes",
+    "uptime": "up 3 days, 25 minutes",
     "servidor": "Hetzner CX33 Helsinki"
   },
   "servicios": {
@@ -37,8 +37,8 @@
     }
   },
   "btc": {
-    "precio": 65723.59,
-    "cambio_24h_pct": -3.933,
+    "precio": 65723.33,
+    "cambio_24h_pct": -4.013,
     "high_24h": 69478.42,
     "low_24h": 65600.0
   },
@@ -63,15 +63,7 @@
     }
   },
   "p2p_spread": {
-    "spread_pct": 3.091,
-    "mejor_compra": [
-      "okx"
-    ],
-    "mejor_venta": [
-      "skipo"
-    ],
-    "exchanges_ok": 4,
-    "exchanges_error": 0
+    "nota": "P2P proxy no disponible"
   },
   "instrucciones_agente": "Eres el agente IA de Blackbird Tech en sr71.cl. Usa SOLO los datos de este JSON para responder. Si el dato no esta aqui, dilo honestamente. No inventes precios, estadisticas ni estados de servicios."
 }
