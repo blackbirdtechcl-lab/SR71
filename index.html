@@ -19,6 +19,7 @@
   --muted: #a89968;
   --success: #10b981;
   --danger: #ef4444;
+  --warning: #f59e0b;
   --mono: 'IBM Plex Mono', monospace;
   --sans: 'IBM Plex Sans', sans-serif;
 }
@@ -29,6 +30,7 @@ body {
   font-family: var(--sans);
   font-size: 12px;
   line-height: 1.4;
+  overflow-x: hidden;
 }
 
 /* INTRO */
@@ -46,31 +48,54 @@ body {
 .intro-overlay.hidden { opacity: 0; pointer-events: none; }
 #introVideo { width: 100%; height: 100%; object-fit: cover; }
 
-.skip-btn {
+.play-btn, .skip-btn {
   position: absolute;
-  bottom: 30px; right: 30px;
-  padding: 10px 20px;
-  background: rgba(212, 175, 55, 0.9);
+  padding: 15px 30px;
+  background: var(--gold-accent);
   color: var(--gold-dark);
   border: none;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s;
 }
 
-.skip-btn:hover { background: var(--gold-bright); }
+.play-btn {
+  font-size: 16px;
+  padding: 20px 40px;
+}
 
-/* AUDIO PLAYER */
+.skip-btn {
+  bottom: 30px;
+  right: 30px;
+  font-size: 12px;
+  padding: 10px 20px;
+}
+
+.play-btn:hover, .skip-btn:hover {
+  background: var(--gold-bright);
+  transform: scale(1.05);
+}
+
+/* AUDIO PLAYER - ABAJO IZQUIERDA CON SCRAMJET */
 .audio-player {
   position: fixed;
-  top: 20px; right: 20px;
+  bottom: 20px;
+  left: 20px;
   z-index: 9999;
   cursor: pointer;
+  opacity: 0;
+  animation: fadeIn 0.5s ease 2s forwards;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
 }
 
 .sr71-icon {
-  width: 45px; height: 45px;
+  width: 55px;
+  height: 55px;
   background: linear-gradient(135deg, var(--gold-accent), var(--gold-bright));
   border-radius: 50%;
   display: flex;
@@ -78,22 +103,44 @@ body {
   justify-content: center;
   box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
   transition: all 0.3s;
+  position: relative;
 }
 
 .sr71-icon::before {
   content: '✈';
-  font-size: 18px;
+  font-size: 22px;
   color: var(--gold-dark);
   transform: rotate(-45deg);
 }
 
 .sr71-icon.playing::before {
-  animation: fly 2s ease-in-out infinite;
+  animation: scramjet 1.2s ease-in-out infinite;
 }
 
-@keyframes fly {
-  0%, 100% { transform: rotate(-45deg) translateY(0); }
-  50% { transform: rotate(-45deg) translateY(-3px); }
+.sr71-icon:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.7);
+}
+
+.sr71-icon:hover::after {
+  content: '🔥';
+  position: absolute;
+  right: -8px;
+  top: -8px;
+  font-size: 16px;
+  animation: fire 0.4s ease infinite;
+}
+
+@keyframes scramjet {
+  0%, 100% { transform: rotate(-45deg) translateX(0) translateY(0); }
+  25% { transform: rotate(-45deg) translateX(3px) translateY(-3px); }
+  50% { transform: rotate(-45deg) translateX(5px) translateY(-5px); }
+  75% { transform: rotate(-45deg) translateX(3px) translateY(-3px); }
+}
+
+@keyframes fire {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.9); }
 }
 
 /* SR-71 BG PHOTOS */
@@ -309,16 +356,26 @@ body {
   color: var(--success);
   font-size: 9px;
 }
+
+@media (max-width: 768px) {
+  .intel-section, .metrics-section, .chart-section, .systems-section {
+    grid-column: span 12;
+  }
+  .metrics-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 </style>
 </head>
 <body>
 
 <!-- INTRO -->
 <div class="intro-overlay" id="introOverlay">
-  <video id="introVideo" autoplay muted>
+  <video id="introVideo" muted playsinline>
     <source src="/sr71_9sec.mp4" type="video/mp4">
   </video>
-  <button class="skip-btn" onclick="skipIntro()">Skip</button>
+  <button class="play-btn" id="playBtn" onclick="startExperience()">▶ INICIAR SR-71</button>
+  <button class="skip-btn" onclick="skipIntro()" style="display:none;" id="skipBtn">Skip</button>
 </div>
 
 <!-- AUDIO -->
@@ -405,19 +462,28 @@ body {
 </div>
 
 <script>
-// INTRO
+// INTRO & AUDIO
 const intro = document.getElementById('introOverlay');
 const introVideo = document.getElementById('introVideo');
+const playBtn = document.getElementById('playBtn');
+const skipBtn = document.getElementById('skipBtn');
 const audio = document.getElementById('bgAudio');
 const sr71 = document.getElementById('sr71');
 let isPlaying = false;
 
-window.addEventListener('load', () => {
+function startExperience() {
+  playBtn.style.display = 'none';
+  skipBtn.style.display = 'block';
+  
+  // Play video
+  introVideo.play().catch(e => console.log('Video:', e));
+  
+  // Play audio
   audio.play().then(() => {
     isPlaying = true;
     sr71.classList.add('playing');
-  }).catch(() => {});
-});
+  }).catch(e => console.log('Audio:', e));
+}
 
 introVideo.addEventListener('ended', () => skipIntro());
 
@@ -431,8 +497,7 @@ function toggleAudio() {
     audio.pause();
     sr71.classList.remove('playing');
   } else {
-    audio.play();
-    sr71.classList.add('playing');
+    audio.play().then(() => sr71.classList.add('playing')).catch(e => {});
   }
   isPlaying = !isPlaying;
 }
@@ -440,7 +505,7 @@ function toggleAudio() {
 // INTEL FEED
 async function loadIntel() {
   try {
-    const res = await fetch('/intel_feed.json');
+    const res = await fetch('/intel_feed.json?t=' + Date.now());
     const data = await res.json();
     const container = document.getElementById('intelFeed');
     container.innerHTML = '';
@@ -458,12 +523,12 @@ async function loadIntel() {
       container.innerHTML += html;
     });
   } catch (e) {
-    document.getElementById('intelFeed').innerHTML = 'Intel feed unavailable';
+    document.getElementById('intelFeed').innerHTML = '<div class="intel-item"><div class="intel-item-summary">Intel feed will update hourly</div></div>';
   }
 }
 
 loadIntel();
-setInterval(loadIntel, 3600000); // Cada hora
+setInterval(loadIntel, 3600000);
 
 // CANDLESTICK CHART
 const chartElement = document.getElementById('chart');
@@ -491,7 +556,6 @@ const candleSeries = chart.addCandlestickSeries({
   wickDownColor: '#ef4444',
 });
 
-// Generate fake candle data
 const data = [];
 let base = 94000;
 let time = Math.floor(Date.now() / 1000) - 24 * 3600;
@@ -511,7 +575,7 @@ for (let i = 0; i < 24; i++) {
 candleSeries.setData(data);
 chart.timeScale().fitContent();
 
-// BTC PRICE UPDATE
+// BTC PRICE
 async function updateBTC() {
   try {
     const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
