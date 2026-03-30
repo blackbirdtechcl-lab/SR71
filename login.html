@@ -1,28 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Acceso | SR-71 P2P</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Acceso | SR-71 P2P</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#1a1410;color:#e8dcc4;font-family:"IBM Plex Sans",sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh}
-.login-box{background:#2d2416;border:1px solid #d4af37;padding:50px;border-radius:8px;text-align:center;max-width:400px;width:100%}
-h1{font-size:24px;color:#d4af37;margin-bottom:30px}
-.oauth-btn{display:block;width:100%;padding:15px;margin:15px 0;background:#d4af37;color:#1a1410;border:none;border-radius:4px;font-size:14px;font-weight:600;cursor:pointer;transition:all .3s}
-.oauth-btn:hover{background:#f0d878;transform:translateY(-2px)}
-.back{margin-top:30px;font-size:12px}
-.back a{color:#d4af37;text-decoration:none}
-</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#1a1410;color:#e8dcc4;font-family:"IBM Plex Sans",sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh}.login-box{background:#2d2416;border:1px solid #d4af37;padding:50px;border-radius:8px;text-align:center;max-width:400px;width:100%}h1{font-size:24px;color:#d4af37;margin-bottom:30px}.oauth-btn{display:block;width:100%;padding:15px;margin:15px 0;background:#d4af37;color:#1a1410;border:none;border-radius:4px;font-size:14px;font-weight:600;cursor:pointer;transition:all .3s}.oauth-btn:hover{background:#f0d878;transform:translateY(-2px)}.back{margin-top:30px;font-size:12px}.back a{color:#d4af37;text-decoration:none}</style>
 </head>
 <body>
-<div class="login-box">
-<h1>SR-71 P2P</h1>
-<p style="margin-bottom:30px;font-size:13px;opacity:.8">Compra USDT con CLP de forma segura</p>
-<button class="oauth-btn" onclick="alert(\"Sistema OAuth en desarrollo\")">🔐 Continuar con Google</button>
-<button class="oauth-btn" onclick="alert(\"Sistema OAuth en desarrollo\")">🔐 Continuar con Facebook</button>
-<div class="back"><a href="/">← Volver al inicio</a></div>
-</div>
+<div class="login-box"><h1>SR-71 P2P</h1><p style="margin-bottom:30px;font-size:13px;opacity:.8">Compra USDT con CLP de forma segura</p>
+<button class="oauth-btn" onclick="loginGoogle()">🔐 Continuar con Google</button>
+<button class="oauth-btn" onclick="loginFacebook()">🔐 Continuar con Facebook</button>
+<div class="back"><a href="/">← Volver al inicio</a></div></div>
+<script>
+const supabase=window.supabase.createClient("https://qbvmaamqdowvlsegtihz.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFidm1hYW1xZG93dmxzZWd0aWh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTE5ODc5NzQsImV4cCI6MjAyNzU2Mzk3NH0.zMm5w4u_bQVYgCPqF7Z_uJfXBh5YWqNqH8Fb8sKQy0w");
+async function loginGoogle(){await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo:"https://sr71.cl/dashboard.html"}})}
+async function loginFacebook(){await supabase.auth.signInWithOAuth({provider:"facebook",options:{redirectTo:"https://sr71.cl/dashboard.html"}})}
+</script>
 </body>
 </html>
