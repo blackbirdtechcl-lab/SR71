@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SR-71 | Blackbird Tech</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -29,39 +29,26 @@ body {
   font-family: var(--sans);
   font-size: 12px;
   line-height: 1.4;
-  overflow-x: hidden;
 }
 
-/* INTRO VIDEO */
+/* INTRO */
 .intro-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: black;
   z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 1s ease;
+  transition: opacity 1s;
 }
 
-.intro-overlay.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-#introVideo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.intro-overlay.hidden { opacity: 0; pointer-events: none; }
+#introVideo { width: 100%; height: 100%; object-fit: cover; }
 
 .skip-btn {
   position: absolute;
-  bottom: 30px;
-  right: 30px;
+  bottom: 30px; right: 30px;
   padding: 10px 20px;
   background: rgba(212, 175, 55, 0.9);
   color: var(--gold-dark);
@@ -70,39 +57,32 @@ body {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
 }
 
-.skip-btn:hover {
-  background: var(--gold-bright);
-  transform: scale(1.05);
-}
+.skip-btn:hover { background: var(--gold-bright); }
 
 /* AUDIO PLAYER */
 .audio-player {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 20px; right: 20px;
   z-index: 9999;
   cursor: pointer;
 }
 
 .sr71-icon {
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, var(--gold-accent) 0%, var(--gold-bright) 100%);
+  width: 45px; height: 45px;
+  background: linear-gradient(135deg, var(--gold-accent), var(--gold-bright));
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
-  border: 2px solid var(--gold-light);
   transition: all 0.3s;
 }
 
 .sr71-icon::before {
   content: '✈';
-  font-size: 20px;
+  font-size: 18px;
   color: var(--gold-dark);
   transform: rotate(-45deg);
 }
@@ -111,186 +91,163 @@ body {
   animation: fly 2s ease-in-out infinite;
 }
 
-.sr71-icon:hover {
-  transform: scale(1.15);
-  box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
-}
-
 @keyframes fly {
   0%, 100% { transform: rotate(-45deg) translateY(0); }
-  50% { transform: rotate(-45deg) translateY(-4px); }
+  50% { transform: rotate(-45deg) translateY(-3px); }
 }
 
-/* TICKER */
-.ticker {
-  background: var(--gold-medium);
-  border-bottom: 1px solid var(--gold-light);
-  padding: 6px 0;
-  overflow: hidden;
+/* SR-71 BG PHOTOS */
+.sr71-bg-1, .sr71-bg-2, .sr71-bg-3 {
+  position: fixed;
+  opacity: 0.06;
+  filter: grayscale(0.5);
+  z-index: 0;
+  pointer-events: none;
 }
 
-.ticker-scroll {
-  display: flex;
-  animation: scroll 35s linear infinite;
-}
-
-.ticker-item {
-  display: inline-flex;
-  align-items: center;
-  margin-right: 28px;
-  font-family: var(--mono);
-  font-size: 10px;
-  white-space: nowrap;
-}
-
-.ticker-label {
-  color: var(--muted);
-  margin-right: 5px;
-}
-
-.ticker-value { color: var(--gold-bright); font-weight: 500; }
-.up { color: var(--success); }
-.down { color: var(--danger); }
-
-@keyframes scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
+.sr71-bg-1 { top: 80px; right: -80px; width: 350px; transform: rotate(5deg); }
+.sr71-bg-2 { bottom: 60px; left: -60px; width: 300px; transform: rotate(-8deg); }
+.sr71-bg-3 { top: 45%; right: 8%; width: 250px; transform: rotate(12deg); }
 
 /* HEADER */
 .header {
-  padding: 16px 24px;
+  padding: 12px 20px;
   background: var(--gold-medium);
   border-bottom: 1px solid var(--gold-accent);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  z-index: 1;
 }
 
 .logo {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--gold-bright);
   letter-spacing: 1px;
 }
 
-.header-nav {
+.header-right {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
 }
 
 .chip {
-  padding: 4px 10px;
+  padding: 3px 8px;
   background: var(--gold-light);
   border-radius: 3px;
-  font-size: 10px;
+  font-size: 9px;
   font-family: var(--mono);
   color: var(--muted);
   border: 1px solid var(--gold-accent);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.chip-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--success);
 }
 
 .admin-btn {
-  padding: 6px 14px;
+  padding: 5px 12px;
   background: var(--gold-accent);
   color: var(--gold-dark);
   border: none;
   border-radius: 3px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.admin-btn:hover {
-  background: var(--gold-bright);
 }
 
 /* CONTAINER */
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 20px;
-}
-
-/* SR-71 BACKGROUND PHOTOS - Distribuidas minimalista */
-.sr71-bg-1, .sr71-bg-2, .sr71-bg-3 {
-  position: fixed;
-  opacity: 0.08;
-  filter: grayscale(0.5);
-  z-index: 0;
-  pointer-events: none;
-}
-
-.sr71-bg-1 {
-  top: 100px;
-  right: -100px;
-  width: 400px;
-  height: 250px;
-  object-fit: cover;
-  transform: rotate(5deg);
-}
-
-.sr71-bg-2 {
-  bottom: 80px;
-  left: -80px;
-  width: 350px;
-  height: 220px;
-  object-fit: cover;
-  transform: rotate(-8deg);
-}
-
-.sr71-bg-3 {
-  top: 50%;
-  right: 5%;
-  width: 300px;
-  height: 180px;
-  object-fit: cover;
-  transform: rotate(12deg);
-}
-
-/* Asegurar que el contenido esté encima */
-.container, .header, .ticker {
+  padding: 16px;
   position: relative;
   z-index: 1;
 }
 
-/* METRICS COMPACT */
-.metrics {
+.grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+}
+
+/* INTEL FEED */
+.intel-section {
+  grid-column: span 8;
+  background: var(--gold-medium);
+  border: 1px solid var(--gold-light);
+  border-radius: 4px;
+  padding: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.intel-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--gold-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--gold-light);
+}
+
+.intel-item {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--gold-light);
+}
+
+.intel-item:last-child { border-bottom: none; }
+
+.intel-item-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.intel-item-summary {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.intel-impact {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.impact-high { background: var(--danger); }
+.impact-medium { background: var(--warning); }
+
+/* METRICS */
+.metrics-section {
+  grid-column: span 4;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .metric {
   background: var(--gold-medium);
   border: 1px solid var(--gold-light);
   border-radius: 4px;
-  padding: 12px;
+  padding: 10px;
   text-align: center;
 }
 
 .metric-label {
-  font-size: 9px;
+  font-size: 8px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .metric-value {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--gold-bright);
   font-family: var(--mono);
@@ -298,53 +255,50 @@ body {
 
 .metric-change {
   font-size: 9px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
-/* CHART SECTION */
-.chart-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
-}
+.up { color: var(--success); }
+.down { color: var(--danger); }
 
-.panel {
+/* CHART */
+.chart-section {
+  grid-column: span 8;
   background: var(--gold-medium);
   border: 1px solid var(--gold-light);
   border-radius: 4px;
-  padding: 14px;
+  padding: 12px;
 }
 
-.panel-title {
+.chart-title {
   font-size: 10px;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid var(--gold-light);
-  padding-bottom: 6px;
+  margin-bottom: 10px;
 }
 
-.chart-container {
-  height: 200px;
-  position: relative;
+#chart { height: 220px; }
+
+/* SYSTEMS */
+.systems-section {
+  grid-column: span 4;
+  background: var(--gold-medium);
+  border: 1px solid var(--gold-light);
+  border-radius: 4px;
+  padding: 12px;
 }
 
-/* SYSTEMS LIST */
 .system-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
+  padding: 6px 0;
   border-bottom: 1px solid var(--gold-light);
-  font-size: 11px;
+  font-size: 10px;
 }
 
-.system-item:last-child {
-  border-bottom: none;
-}
+.system-item:last-child { border-bottom: none; }
 
 .system-name {
   font-family: var(--mono);
@@ -355,190 +309,16 @@ body {
   color: var(--success);
   font-size: 9px;
 }
-
-/* ADMIN PANEL */
-.admin-modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.8);
-  backdrop-filter: blur(10px);
-  z-index: 9998;
-  align-items: center;
-  justify-content: center;
-}
-
-.admin-modal.active {
-  display: flex;
-}
-
-.admin-content {
-  background: var(--gold-dark);
-  border: 2px solid var(--gold-accent);
-  border-radius: 8px;
-  padding: 24px;
-  max-width: 900px;
-  width: 90%;
-  box-shadow: 0 0 40px rgba(212, 175, 55, 0.4);
-}
-
-.admin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--gold-accent);
-}
-
-.admin-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--gold-bright);
-  letter-spacing: 1px;
-}
-
-.admin-close {
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  font-size: 24px;
-  cursor: pointer;
-  width: 30px;
-  height: 30px;
-}
-
-.admin-close:hover {
-  color: var(--gold-bright);
-}
-
-.admin-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.admin-card {
-  background: var(--gold-medium);
-  border: 1px solid var(--gold-accent);
-  border-radius: 4px;
-  padding: 14px;
-}
-
-.admin-card-label {
-  font-size: 9px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-}
-
-.admin-card-value {
-  font-size: 20px;
-  font-weight: 600;
-  font-family: var(--mono);
-  color: var(--gold-bright);
-}
-
-.admin-section {
-  margin-top: 20px;
-}
-
-.admin-section-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--gold-accent);
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.admin-list {
-  background: var(--gold-medium);
-  border: 1px solid var(--gold-light);
-  border-radius: 4px;
-  padding: 10px;
-}
-
-.admin-list-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--gold-light);
-  font-size: 11px;
-}
-
-.admin-list-item:last-child {
-  border-bottom: none;
-}
-
-.input-group {
-  margin-bottom: 16px;
-}
-
-.input-field {
-  width: 100%;
-  padding: 10px;
-  background: var(--gold-medium);
-  border: 1px solid var(--gold-accent);
-  border-radius: 4px;
-  color: var(--gold-bright);
-  font-family: var(--mono);
-  font-size: 13px;
-}
-
-.input-field:focus {
-  outline: none;
-  border-color: var(--gold-bright);
-}
-
-.btn-group {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.btn {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background: var(--gold-accent);
-  color: var(--gold-dark);
-}
-
-.btn-secondary {
-  background: var(--gold-medium);
-  color: var(--muted);
-  border: 1px solid var(--gold-light);
-}
-
-@media (max-width: 1024px) {
-  .gallery { grid-template-columns: repeat(3, 1fr); }
-  .metrics { grid-template-columns: repeat(3, 1fr); }
-  .chart-row { grid-template-columns: 1fr; }
-  .admin-grid { grid-template-columns: repeat(2, 1fr); }
-}
 </style>
 </head>
 <body>
 
-<!-- INTRO VIDEO -->
+<!-- INTRO -->
 <div class="intro-overlay" id="introOverlay">
   <video id="introVideo" autoplay muted>
-    <source src="http://204.168.154.87/sr71_9sec.mp4" type="video/mp4">
+    <source src="/sr71_9sec.mp4" type="video/mp4">
   </video>
-  <button class="skip-btn" onclick="skipIntro()">Skip Intro</button>
+  <button class="skip-btn" onclick="skipIntro()">Skip</button>
 </div>
 
 <!-- AUDIO -->
@@ -546,162 +326,67 @@ body {
   <div class="sr71-icon" id="sr71"></div>
 </div>
 <audio id="bgAudio" loop>
-  <source src="http://204.168.154.87/macarena.mp3" type="audio/mpeg">
+  <source src="/macarena.mp3" type="audio/mpeg">
 </audio>
 
-<!-- ADMIN MODAL -->
-<div class="admin-modal" id="adminModal">
-  <div class="admin-content">
-    <div class="admin-header">
-      <div class="admin-title">🔐 SUPERADMIN PANEL</div>
-      <button class="admin-close" onclick="closeAdmin()">×</button>
-    </div>
-    
-    <div id="authSection">
-      <div class="input-group">
-        <input type="text" class="input-field" id="authCode" placeholder="Enter 6-digit code from Telegram">
-      </div>
-      <div class="btn-group">
-        <button class="btn btn-secondary" onclick="closeAdmin()">Cancel</button>
-        <button class="btn btn-primary" onclick="authenticate()">Verify</button>
-      </div>
-    </div>
-
-    <div id="adminData" style="display:none;">
-      <div class="admin-grid">
-        <div class="admin-card">
-          <div class="admin-card-label">Balance Total</div>
-          <div class="admin-card-value" id="adminBalance">$1,845</div>
-        </div>
-        <div class="admin-card">
-          <div class="admin-card-label">Ingresos P2P</div>
-          <div class="admin-card-value" id="adminIncome">$4,234</div>
-        </div>
-        <div class="admin-card">
-          <div class="admin-card-label">Gastos</div>
-          <div class="admin-card-value" id="adminExpenses">$892</div>
-        </div>
-        <div class="admin-card">
-          <div class="admin-card-label">Net Profit</div>
-          <div class="admin-card-value up" id="adminProfit">+$3,342</div>
-        </div>
-      </div>
-
-      <div class="admin-section">
-        <div class="admin-section-title">Servicios Activos</div>
-        <div class="admin-list">
-          <div class="admin-list-item">
-            <span>blackbird-trumkill.service</span>
-            <span style="color: var(--success);">Running</span>
-          </div>
-          <div class="admin-list-item">
-            <span>blackbird-p2p.service</span>
-            <span style="color: var(--success);">Running</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="admin-section">
-        <div class="admin-section-title">Bases de Datos Conectadas</div>
-        <div class="admin-list">
-          <div class="admin-list-item">
-            <span>contador.db</span>
-            <span>17.2 KB</span>
-          </div>
-          <div class="admin-list-item">
-            <span>revenue.db</span>
-            <span>24.1 KB</span>
-          </div>
-          <div class="admin-list-item">
-            <span>smc_memory.db</span>
-            <span>156 KB</span>
-          </div>
-          <div class="admin-list-item">
-            <span>notifications.db</span>
-            <span>8.4 KB</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-scroll">
-    <div class="ticker-item"><span class="ticker-label">BTC:</span><span class="ticker-value" id="btcPrice">$94,234</span></div>
-    <div class="ticker-item"><span class="ticker-label">ETH:</span><span class="ticker-value">$2,845</span></div>
-    <div class="ticker-item"><span class="ticker-label">USD/CLP:</span><span class="ticker-value">985.4</span></div>
-    <div class="ticker-item"><span class="ticker-label">VIX:</span><span class="ticker-value">18.4</span></div>
-    <div class="ticker-item"><span class="ticker-label">F&G:</span><span class="ticker-value">62</span></div>
-    <div class="ticker-item"><span class="ticker-label">BTC:</span><span class="ticker-value">$94,234</span></div>
-    <div class="ticker-item"><span class="ticker-label">ETH:</span><span class="ticker-value">$2,845</span></div>
-  </div>
-</div>
+<!-- SR-71 PHOTOS -->
+<img src="/sr3.jpeg" class="sr71-bg-1" alt="">
+<img src="/sr5.jpeg" class="sr71-bg-2" alt="">
+<img src="/sr7.jpeg" class="sr71-bg-3" alt="">
 
 <!-- HEADER -->
 <div class="header">
   <div class="logo">SR-71 BLACKBIRD TECH</div>
-  <div class="header-nav">
-    <div class="chip"><div class="chip-dot"></div>TRUMKILL</div>
-    <div class="chip"><div class="chip-dot"></div>P2P</div>
-    <button class="admin-btn" onclick="openAdmin()">🔐 Superadmin</button>
+  <div class="header-right">
+    <div class="chip">TRUMKILL</div>
+    <div class="chip">P2P</div>
+    <button class="admin-btn" onclick="openAdmin()">Admin</button>
   </div>
 </div>
 
 <!-- MAIN -->
 <div class="container">
-  
-  <!-- SR-71 FOTOS DISTRIBUIDAS MINIMALISTA -->
-  <img src="http://204.168.154.87/sr3.jpeg" class="sr71-bg-1" alt="">
-  <img src="http://204.168.154.87/sr5.jpeg" class="sr71-bg-2" alt="">
-  <img src="http://204.168.154.87/sr7.jpeg" class="sr71-bg-3" alt="">
+  <div class="grid">
+    
+    <!-- INTEL FEED -->
+    <div class="intel-section">
+      <div class="intel-title">🌍 INTEL FEED</div>
+      <div id="intelFeed">Loading intel...</div>
+    </div>
 
-  <!-- METRICS -->
-  <div class="metrics">
-    <div class="metric">
-      <div class="metric-label">Bitcoin</div>
-      <div class="metric-value">$94,234</div>
-      <div class="metric-change up">+2.4%</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Ethereum</div>
-      <div class="metric-value">$2,845</div>
-      <div class="metric-change up">+1.8%</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">USD/CLP</div>
-      <div class="metric-value">985.40</div>
-      <div class="metric-change down">-0.3%</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">VIX</div>
-      <div class="metric-value">18.4</div>
-      <div class="metric-change down">-3.2%</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Fear & Greed</div>
-      <div class="metric-value">62</div>
-      <div class="metric-change up">+5</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Uptime</div>
-      <div class="metric-value">142h</div>
-      <div class="metric-change">6 days</div>
-    </div>
-  </div>
-
-  <!-- CHART & SYSTEMS -->
-  <div class="chart-row">
-    <div class="panel">
-      <div class="panel-title">Bitcoin 48H</div>
-      <div class="chart-container">
-        <canvas id="btcChart"></canvas>
+    <!-- METRICS -->
+    <div class="metrics-section">
+      <div class="metric">
+        <div class="metric-label">Bitcoin</div>
+        <div class="metric-value" id="btcPrice">$94,234</div>
+        <div class="metric-change up">+2.4%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">USD/CLP</div>
+        <div class="metric-value">985.40</div>
+        <div class="metric-change down">-0.3%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">VIX</div>
+        <div class="metric-value">18.4</div>
+        <div class="metric-change down">-3.2%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Uptime</div>
+        <div class="metric-value">142h</div>
+        <div class="metric-change">6d</div>
       </div>
     </div>
 
-    <div class="panel">
-      <div class="panel-title">Active Systems</div>
+    <!-- CHART -->
+    <div class="chart-section">
+      <div class="chart-title">BTC/USDT 1H</div>
+      <div id="chart"></div>
+    </div>
+
+    <!-- SYSTEMS -->
+    <div class="systems-section">
+      <div class="chart-title">Active Systems</div>
       <div class="system-item">
         <span class="system-name">trumkill.py</span>
         <span class="system-status">Running</span>
@@ -711,16 +396,12 @@ body {
         <span class="system-status">Running</span>
       </div>
       <div class="system-item">
-        <span class="system-name">blackbird_contador.py</span>
+        <span class="system-name">blackbird_intel.py</span>
         <span class="system-status">Cron</span>
       </div>
-      <div class="system-item">
-        <span class="system-name">blackbird_gmail_scanner.py</span>
-        <span class="system-status">Active</span>
-      </div>
     </div>
-  </div>
 
+  </div>
 </div>
 
 <script>
@@ -731,25 +412,18 @@ const audio = document.getElementById('bgAudio');
 const sr71 = document.getElementById('sr71');
 let isPlaying = false;
 
-// Start audio immediately on page load
 window.addEventListener('load', () => {
   audio.play().then(() => {
     isPlaying = true;
     sr71.classList.add('playing');
-  }).catch(() => {
-    // Autoplay blocked, user needs to interact
-  });
+  }).catch(() => {});
 });
 
-introVideo.addEventListener('ended', () => {
-  skipIntro();
-});
+introVideo.addEventListener('ended', () => skipIntro());
 
 function skipIntro() {
   intro.classList.add('hidden');
-  setTimeout(() => {
-    intro.style.display = 'none';
-  }, 1000);
+  setTimeout(() => intro.style.display = 'none', 1000);
 }
 
 function toggleAudio() {
@@ -763,80 +437,91 @@ function toggleAudio() {
   isPlaying = !isPlaying;
 }
 
-// ADMIN
-function openAdmin() {
-  document.getElementById('adminModal').classList.add('active');
-  fetch('http://204.168.154.87:8001/admin-request', { method: 'POST' }).catch(() => {});
-}
-
-function closeAdmin() {
-  document.getElementById('adminModal').classList.remove('active');
-}
-
-async function authenticate() {
-  const code = document.getElementById('authCode').value;
+// INTEL FEED
+async function loadIntel() {
   try {
-    const res = await fetch('http://204.168.154.87:8001/admin-verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code })
-    });
+    const res = await fetch('/intel_feed.json');
     const data = await res.json();
-    if (data.success) {
-      document.getElementById('authSection').style.display = 'none';
-      document.getElementById('adminData').style.display = 'block';
-    } else {
-      alert('Invalid code');
-    }
+    const container = document.getElementById('intelFeed');
+    container.innerHTML = '';
+    
+    data.news.forEach(item => {
+      const impactClass = item.impact === 'high' ? 'impact-high' : 'impact-medium';
+      const html = `
+        <div class="intel-item">
+          <div class="intel-item-title">
+            <span class="intel-impact ${impactClass}"></span>${item.title}
+          </div>
+          <div class="intel-item-summary">${item.summary}</div>
+        </div>
+      `;
+      container.innerHTML += html;
+    });
   } catch (e) {
-    alert('Auth error');
+    document.getElementById('intelFeed').innerHTML = 'Intel feed unavailable';
   }
 }
 
-// CHART
-const ctx = document.getElementById('btcChart').getContext('2d');
-new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: Array.from({length: 48}, (_, i) => i),
-    datasets: [{
-      data: Array.from({length: 48}, () => 92000 + Math.random() * 4000),
-      borderColor: '#d4af37',
-      backgroundColor: 'rgba(212, 175, 55, 0.1)',
-      borderWidth: 1.5,
-      fill: true,
-      tension: 0.4,
-      pointRadius: 0
-    }]
+loadIntel();
+setInterval(loadIntel, 3600000); // Cada hora
+
+// CANDLESTICK CHART
+const chartElement = document.getElementById('chart');
+const chart = LightweightCharts.createChart(chartElement, {
+  width: chartElement.clientWidth,
+  height: 220,
+  layout: {
+    background: { color: '#1a1410' },
+    textColor: '#a89968',
   },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { display: false },
-      y: {
-        ticks: {
-          font: { size: 9, family: 'IBM Plex Mono' },
-          color: '#a89968',
-          callback: (val) => '$' + (val/1000).toFixed(0) + 'k'
-        },
-        grid: { color: '#3d3020' }
-      }
-    }
-  }
+  grid: {
+    vertLines: { color: '#3d3020' },
+    horzLines: { color: '#3d3020' },
+  },
+  timeScale: {
+    borderColor: '#3d3020',
+  },
 });
 
-// UPDATE PRICES
-async function updatePrices() {
+const candleSeries = chart.addCandlestickSeries({
+  upColor: '#10b981',
+  downColor: '#ef4444',
+  borderVisible: false,
+  wickUpColor: '#10b981',
+  wickDownColor: '#ef4444',
+});
+
+// Generate fake candle data
+const data = [];
+let base = 94000;
+let time = Math.floor(Date.now() / 1000) - 24 * 3600;
+
+for (let i = 0; i < 24; i++) {
+  const open = base + (Math.random() - 0.5) * 2000;
+  const close = open + (Math.random() - 0.5) * 1500;
+  const high = Math.max(open, close) + Math.random() * 500;
+  const low = Math.min(open, close) - Math.random() * 500;
+  
+  data.push({
+    time: time + i * 3600,
+    open, high, low, close
+  });
+}
+
+candleSeries.setData(data);
+chart.timeScale().fitContent();
+
+// BTC PRICE UPDATE
+async function updateBTC() {
   try {
     const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
     const data = await res.json();
     document.getElementById('btcPrice').textContent = '$' + parseFloat(data.lastPrice).toLocaleString('en-US', {maximumFractionDigits: 0});
   } catch (e) {}
 }
-updatePrices();
-setInterval(updatePrices, 60000);
+
+updateBTC();
+setInterval(updateBTC, 60000);
 </script>
 
 </body>
