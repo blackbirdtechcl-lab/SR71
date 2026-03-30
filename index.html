@@ -437,7 +437,7 @@ body {
 
     <!-- CHART -->
     <div class="chart-section">
-      <div class="chart-title">BTC/USDT 1H</div>
+      <div class="chart-title">USD/CLP 1H</div>
       <div id="chart"></div>
     </div>
 
@@ -578,7 +578,7 @@ chart.timeScale().fitContent();
 // BTC PRICE
 async function updateBTC() {
   try {
-    const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+    const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=USDCLP');
     const data = await res.json();
     document.getElementById('btcPrice').textContent = '$' + parseFloat(data.lastPrice).toLocaleString('en-US', {maximumFractionDigits: 0});
   } catch (e) {}
