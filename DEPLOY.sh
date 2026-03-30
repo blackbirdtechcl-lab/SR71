@@ -6,20 +6,21 @@ SERVER="root@204.168.154.87"
 echo "🚀 BLACKBIRD DEPLOY"
 echo "==================="
 
-# Git push
-echo "📤 Git push..."
-git add -A
-git commit -m "Deploy $(date '+%Y-%m-%d %H:%M')" || echo "Nothing to commit"
-git push origin main
+# Crear tarball
+echo "📦 Empaquetando..."
+tar czf /tmp/blackbird.tar.gz \
+  --exclude='venv' \
+  --exclude='__pycache__' \
+  --exclude='.git' \
+  --exclude='*.db' \
+  *.py index.html DEPLOY.sh data/ files/ files3/ blackbird_skills/ 2>/dev/null || true
 
-# Pull en servidor
-echo "📡 Pull en servidor..."
-ssh ${SERVER} << 'ENDSSH'
-cd /root/blackbird
-git pull origin main
-source venv/bin/activate
-pip install -r requirements.txt --quiet 2>/dev/null || true
-echo "✅ Código actualizado"
-ENDSSH
+# Subir
+echo "📤 Subiendo a servidor..."
+scp /tmp/blackbird.tar.gz ${SERVER}:/root/
+
+# Extraer en servidor
+echo "📡 Desplegando..."
+ssh ${SERVER} "cd /root/blackbird && tar xzf /root/blackbird.tar.gz && rm /root/blackbird.tar.gz"
 
 echo "✅ Deploy completo!"
