@@ -6,32 +6,33 @@
   <title>SR-71 · Sistema P2P Chile</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;0,400;1,300&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" onload="initGoogleAuth()" async defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:      #f0ece4;
-      --bg1:     #e8e3da;
-      --bg2:     #ddd8ce;
-      --ink:     #1a1a1a;
-      --ink2:    #4a4540;
-      --ink3:    #7a7570;
-      --bronze:  #8c6d3f;
-      --bronze2: #b08a50;
-      --green:   #2d5a3d;
-      --green2:  #4a8c62;
-      --red:     #7a2828;
-      --red2:    #b34040;
-      --amber:   #7a5e00;
-      --amber2:  #c9a000;
-      --border:  #d0c8bc;
-      --black:   #1a1a1a;
+      --bg:      #0c0e12;
+      --bg1:     #12151c;
+      --bg2:     #1c2128;
+      --surface: #12151c;
+      --ink:     #e6edf3;
+      --ink2:    #8b949e;
+      --ink3:    #6e7681;
+      --bronze:  #d4a853;
+      --bronze2: #e8c170;
+      --green:   #3fb950;
+      --green2:  #56d364;
+      --red:     #f85149;
+      --red2:    #ff7b72;
+      --amber:   #d29922;
+      --amber2:  #e3b341;
+      --border:  #30363d;
+      --black:   #010409;
     }
 
     html, body { height: 100%; }
-    body { background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif; }
+    body { background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', sans-serif; }
 
     /* ── SCREENS ─────────────────────────────────────────────────────────────── */
     .screen { display: none; min-height: 100vh; }
@@ -73,15 +74,15 @@
       margin-bottom: 60px;
     }
     .intro-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 200;
-      font-size: 96px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 72px;
       letter-spacing: 12px;
       color: #fff;
       line-height: 1;
     }
     .intro-sub {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       letter-spacing: 4px;
       color: rgba(255,255,255,0.65);
@@ -90,7 +91,7 @@
       position: relative;
       z-index: 2;
       margin-top: 12px;
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       letter-spacing: 3px;
       color: #fff;
@@ -122,22 +123,23 @@
       justify-content: center;
       flex-direction: column;
       gap: 20px;
+      background: var(--bg);
     }
     .denied-title {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'IBM Plex Sans', sans-serif;
       font-weight: 200;
       font-size: 48px;
       letter-spacing: 4px;
       color: var(--red);
     }
     .denied-sub {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       color: var(--ink3);
       letter-spacing: 2px;
     }
     .btn-back {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       letter-spacing: 2px;
       color: var(--ink2);
@@ -173,7 +175,7 @@
       100% { transform: translateX(-50%); }
     }
     .ticker-item {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       letter-spacing: 1px;
       color: rgba(255,255,255,0.65);
@@ -190,17 +192,17 @@
       justify-content: space-between;
       padding: 14px 32px;
       border-bottom: 1px solid var(--border);
-      background: var(--bg);
+      background: var(--surface);
       position: sticky; top: 0; z-index: 100;
       flex-shrink: 0;
     }
     .topbar-left { display: flex; align-items: center; gap: 12px; }
     .topbar-logo {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 200;
-      font-size: 24px;
-      letter-spacing: 6px;
-      color: var(--bronze);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: 4px;
+      color: var(--bronze2);
     }
     .status-dot {
       width: 7px; height: 7px;
@@ -212,28 +214,28 @@
     .backend-banner {
       display: none;
       padding: 8px 20px;
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
       letter-spacing: 0.5px;
-      color: var(--ink);
-      background: #f5e6c8;
-      border-bottom: 1px solid var(--amber2);
+      color: var(--amber2);
+      background: #1c1508;
+      border-bottom: 1px solid var(--amber);
       line-height: 1.45;
     }
     .backend-banner.visible { display: block; }
     .topbar-right { display: flex; align-items: center; gap: 24px; }
     .topbar-usdclp {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
       color: var(--ink2);
     }
     .topbar-time {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
       color: var(--ink3);
     }
     .btn-logout {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
       letter-spacing: 1px;
       color: var(--ink3);
@@ -259,7 +261,7 @@
     }
     .hero-left { display: flex; flex-direction: column; gap: 6px; }
     .section-label {
-      font-family: 'Inter', sans-serif;
+      font-family: 'IBM Plex Sans', sans-serif;
       font-size: 10px;
       font-weight: 600;
       letter-spacing: 3px;
@@ -268,24 +270,24 @@
     }
     .hero-spread-row { display: flex; align-items: baseline; gap: 6px; }
     .hero-spread {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 200;
-      font-size: 88px;
-      line-height: 0.9;
-      color: var(--green);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 56px;
+      line-height: 0.95;
+      color: var(--green2);
       transition: color .3s;
     }
     .hero-spread.neutral { color: var(--amber); }
     .hero-spread.danger  { color: var(--red); }
     .hero-unit {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 20px;
       color: var(--ink3);
       align-self: flex-end;
       margin-bottom: 12px;
     }
     .hero-equiv {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 14px;
       color: var(--ink2);
       margin-top: 4px;
@@ -298,7 +300,7 @@
       padding-top: 12px;
     }
     .signal-badge {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 13px;
       letter-spacing: 2px;
       font-weight: 700;
@@ -309,7 +311,7 @@
     .signal-badge.esperar { color: var(--amber); border-color: var(--amber2); }
     .signal-badge.stop    { color: var(--red);   border-color: var(--red2);  }
     .signal-via {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       color: var(--ink3);
       letter-spacing: 1px;
@@ -334,11 +336,11 @@
       transition: background .2s;
       position: relative;
     }
-    .price-card:hover { background: var(--bg1); }
-    .price-card.best-card { background: #f4f1e8; }
-    .price-card.skipo-card { background: #f5f1e6; }
+    .price-card:hover { background: var(--bg2); }
+    .price-card.best-card { background: #0d2818; border-left: 3px solid var(--green2); }
+    .price-card.skipo-card { background: #161308; border-left: 3px solid var(--bronze); }
     .card-exchange {
-      font-family: 'Inter', sans-serif;
+      font-family: 'IBM Plex Sans', sans-serif;
       font-size: 10px;
       font-weight: 600;
       letter-spacing: 3px;
@@ -347,22 +349,22 @@
     }
     .skipo-card .card-exchange { color: var(--bronze); }
     .card-price {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 20px;
       font-weight: 700;
       color: var(--ink);
     }
     .skipo-card .card-price { color: var(--bronze); }
-    .card-spread { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--green2); }
+    .card-spread { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--green2); }
     .card-spread.neg { color: var(--red2); }
     .card-tag {
       position: absolute; top: 12px; right: 12px;
-      font-family: 'Inter', sans-serif;
+      font-family: 'IBM Plex Sans', sans-serif;
       font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
       padding: 3px 8px;
       background: var(--green); color: #fff;
     }
-    .card-sub { font-family: 'Inter', sans-serif; font-size: 10px; color: var(--ink3); }
+    .card-sub { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; color: var(--ink3); }
 
     /* Posición Skipo */
     .posicion-section { margin-bottom: 32px; display: none; }
@@ -396,16 +398,16 @@
     .semaforo.amarillo{ background: var(--amber2); box-shadow: 0 0 8px rgba(201,160,0,0.4); }
     .semaforo.rojo    { background: var(--red2);   box-shadow: 0 0 8px rgba(179,64,64,0.4); }
     .posicion-prom-label {
-      font-family: 'Inter', sans-serif;
+      font-family: 'IBM Plex Sans', sans-serif;
       font-size: 10px; font-weight: 600; letter-spacing: 2px;
       text-transform: uppercase; color: var(--ink3); text-align: center;
     }
     .posicion-prom {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 200; font-size: 44px; color: var(--bronze); line-height: 1;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600; font-size: 32px; color: var(--bronze2); line-height: 1;
     }
     .posicion-be {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px; color: var(--ink3);
     }
     .posicion-stats {
@@ -419,8 +421,8 @@
       padding: 9px 0; border-bottom: 1px solid var(--border);
     }
     .pos-stat-row:last-child { border-bottom: none; }
-    .pos-stat-label { font-family: 'Inter', sans-serif; font-size: 11px; color: var(--ink3); }
-    .pos-stat-val   { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: var(--ink); }
+    .pos-stat-label { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; color: var(--ink3); }
+    .pos-stat-val   { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: var(--ink); }
     .pos-stat-val.verde  { color: var(--green2); }
     .pos-stat-val.rojo   { color: var(--red2); }
     .pos-stat-val.amber  { color: var(--amber); }
@@ -449,17 +451,18 @@
       flex-direction: column;
       gap: 12px;
     }
-    .ops-card-title { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--ink); letter-spacing: .04em; }
+    .ops-card-title { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--ink); letter-spacing: .04em; }
     .ops-card-sub   { font-size: 11px; color: var(--ink3); line-height: 1.4; }
     .ops-form       { display: flex; flex-direction: column; gap: 10px; }
     .ops-field      { display: flex; flex-direction: column; gap: 4px; }
-    .ops-field label { font-size: 10px; font-family: 'Space Mono', monospace; text-transform: uppercase; color: var(--ink3); letter-spacing: .06em; }
+    .ops-field label { font-size: 10px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; color: var(--ink3); letter-spacing: .06em; }
     .ops-field input {
-      background: var(--bg);
+      background: var(--bg2);
       border: 1px solid var(--border);
+      color: var(--ink);
       border-radius: 3px;
       padding: 8px 10px;
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 13px;
       color: var(--ink);
       width: 100%;
@@ -468,7 +471,7 @@
     }
     .ops-field input:focus { border-color: var(--bronze); }
     .ops-preview {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       color: var(--ink2);
       background: var(--bg2);
@@ -480,7 +483,7 @@
       padding: 10px 16px;
       border: none;
       border-radius: 3px;
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       font-weight: 700;
       letter-spacing: .08em;
@@ -495,7 +498,7 @@
     .ops-btn-sync   { background: var(--bg2);     color: var(--ink); border: 1px solid var(--border); flex: 1; }
     .ops-btn-row    { display: flex; gap: 8px; }
     .ops-result {
-      font-family: 'Space Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       min-height: 0;
       padding: 0;
@@ -505,7 +508,7 @@
     .ops-result.err { color: var(--red2);    padding: 6px 0; }
     .ops-day-stats  { display: flex; flex-direction: column; gap: 6px; }
     .ops-day-row    { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink2); }
-    .ops-day-row span:last-child { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--ink); }
+    .ops-day-row span:last-child { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); }
 
     /* Trazabilidad P2P (email ↔ pagos ↔ banco API) */
     .trace-section { margin-bottom: 32px; }
@@ -514,16 +517,16 @@
       margin-bottom: 12px;
     }
     .trace-meta {
-      font-family: 'Space Mono', monospace; font-size: 10px; color: var(--ink3); letter-spacing: .04em;
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink3); letter-spacing: .04em;
       max-width: 52ch; text-align: right; line-height: 1.4;
     }
     .trace-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); table-layout: fixed; }
     .trace-table th {
-      font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+      font-family: 'IBM Plex Sans', sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
       color: var(--ink3); padding: 10px 10px; text-align: left; background: var(--bg1); border-bottom: 1px solid var(--border);
     }
     .trace-table td {
-      font-family: 'Space Mono', monospace; font-size: 10px; color: var(--ink);
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink);
       padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top;
       word-break: break-word;
     }
@@ -542,28 +545,57 @@
     .trace-badge.lo { background: var(--bg2); color: var(--ink3); }
     .trace-mini { font-size: 9px; color: var(--ink3); display: block; margin-top: 2px; line-height: 1.3; }
     .trace-chain { font-size: 10px; color: var(--ink2); line-height: 1.5; }
-    .trace-empty { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink3); padding: 20px 14px; text-align: center; }
-    .trace-h3 { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink3); margin: 20px 0 8px; letter-spacing: .06em; }
+    .trace-empty { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink3); padding: 20px 14px; text-align: center; }
+    .trace-h3 { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink3); margin: 20px 0 8px; letter-spacing: .06em; }
 
     /* Skipo pagos pendientes (API /v1/converts no COMPLETED) */
-    .skipo-pend-section { margin-bottom: 28px; }
+    .skipo-pend-section {
+      margin-bottom: 28px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 22px;
+      background: linear-gradient(180deg, var(--bg1) 0%, var(--bg) 100%);
+    }
     .skipo-pend-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-    .skipo-pend-summary { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--bronze); font-weight: 700; }
-    .banco-config-hint { font-size: 10px; color: var(--ink3); max-width: 640px; line-height: 1.4; margin-bottom: 10px; }
+    .skipo-pend-summary { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--bronze2); font-weight: 700; }
+    .skipo-metricas {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+      gap: 10px;
+      margin: 14px 0 16px;
+    }
+    .skipo-met-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px 12px;
+    }
+    .skipo-met-label {
+      font-size: 9px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--ink3); margin-bottom: 4px;
+    }
+    .skipo-met-val {
+      font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--ink);
+    }
+    .skipo-met-val.accent { color: var(--bronze2); }
+    .skipo-met-val.ok { color: var(--green2); }
+    .skipo-met-val.bad { color: var(--red2); }
+    .skipo-diag { font-size: 10px; color: var(--ink3); margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+    .banco-config-hint { font-size: 10px; color: var(--ink3); max-width: 720px; line-height: 1.45; margin-bottom: 10px; }
 
     /* Banco Chile */
     .banco-section { margin-bottom: 32px; }
     .banco-header {
       display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px;
     }
-    .banco-total { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--green); font-weight: 700; }
+    .banco-total { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--green); font-weight: 700; }
     .banco-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
     .banco-table th {
-      font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+      font-family: 'IBM Plex Sans', sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
       color: var(--ink3); padding: 10px 14px; text-align: left; background: var(--bg1); border-bottom: 1px solid var(--border);
     }
     .banco-table td {
-      font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink);
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink);
       padding: 10px 14px; border-bottom: 1px solid var(--border);
     }
     .banco-table tr:last-child td { border-bottom: none; }
@@ -571,16 +603,16 @@
     .tipo-abono { color: var(--green2); font-weight: 700; }
     .tipo-cargo { color: var(--red2);   font-weight: 700; }
     .badge-p2p {
-      display: inline-block; font-family: 'Inter', sans-serif; font-size: 8px; font-weight: 600;
+      display: inline-block; font-family: 'IBM Plex Sans', sans-serif; font-size: 8px; font-weight: 600;
       letter-spacing: 1px; padding: 2px 6px; background: var(--amber2); color: #fff; margin-left: 6px; vertical-align: middle;
     }
-    .banco-empty { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink3); padding: 20px 14px; text-align: center; }
+    .banco-empty { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink3); padding: 20px 14px; text-align: center; }
 
     /* Main grid */
     .main-grid { margin-bottom: 40px; }
     .position-box { border: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 4px; max-width: 340px; }
     .pos-title {
-      font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 3px;
+      font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 3px;
       text-transform: uppercase; color: var(--ink3); margin-bottom: 12px;
     }
     .pos-row {
@@ -588,8 +620,8 @@
       padding: 8px 0; border-bottom: 1px solid var(--border);
     }
     .pos-row:last-child { border-bottom: none; }
-    .pos-label { font-family: 'Inter', sans-serif; font-size: 11px; color: var(--ink3); }
-    .pos-value { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--ink); font-weight: 700; }
+    .pos-label { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; color: var(--ink3); }
+    .pos-value { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink); font-weight: 700; }
     .pos-value.pos-green { color: var(--green2); }
     .pos-value.pos-red   { color: var(--red2); }
 
@@ -598,13 +630,13 @@
       border-top: 1px solid var(--border); padding: 20px 32px;
       display: flex; justify-content: space-between; align-items: center; margin-top: auto; flex-shrink: 0;
     }
-    .footer-copy { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--ink3); }
-    .footer-update { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--ink3); }
+    .footer-copy { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--ink3); }
+    .footer-update { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink3); }
 
     /* Balance toggle */
     .topbar-balance {
       display: flex; align-items: center; gap: 6px;
-      font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink2);
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink2);
       cursor: pointer; user-select: none; padding: 4px 8px;
       border: 1px solid var(--border); transition: background .15s;
     }
@@ -617,17 +649,17 @@
     .detalle-section { margin-bottom: 32px; }
     .detalle-header  { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
     .detalle-toggle  {
-      font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 1px; color: var(--bronze);
+      font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1px; color: var(--bronze);
       background: none; border: none; cursor: pointer; padding: 0;
     }
     .detalle-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); font-size: 11px; }
     .detalle-table th {
-      font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+      font-family: 'IBM Plex Sans', sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
       color: var(--ink3); padding: 8px 12px; text-align: right; background: var(--bg1); border-bottom: 1px solid var(--border);
     }
     .detalle-table th:first-child { text-align: left; }
     .detalle-table td {
-      font-family: 'Space Mono', monospace; padding: 8px 12px; border-bottom: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace; padding: 8px 12px; border-bottom: 1px solid var(--border);
       text-align: right; color: var(--ink);
     }
     .detalle-table td:first-child { text-align: left; color: var(--ink3); font-size: 10px; }
@@ -744,9 +776,9 @@
       <p class="section-label">Precios P2P en vivo</p>
       <div class="prices-grid">
         <div class="price-card skipo-card" id="card-skipo">
-          <div class="card-exchange">Skipo (venta)</div>
+          <div class="card-exchange">Skipo &#8212; compra proveedor</div>
           <div class="card-price" id="price-skipo">&#8212;</div>
-          <div class="card-sub">lo que recibes por USDT</div>
+          <div class="card-sub">Costo CLP/USDT (solo referencia compra; ignora venta)</div>
         </div>
         <div class="price-card" id="card-bybit">
           <div class="card-exchange">Bybit P2P</div>
@@ -764,6 +796,53 @@
           <div class="card-spread" id="spread-binance">&#8212;</div>
         </div>
       </div>
+    </section>
+
+    <!-- Skipo: pagos pendientes + costo ponderado (misma API que la app móvil) -->
+    <section class="skipo-pend-section" id="pagos-pendientes">
+      <div class="skipo-pend-head">
+        <p class="section-label" style="margin-bottom:0">Skipo &#8212; pagos pendientes</p>
+        <span class="skipo-pend-summary" id="skipo-pend-summary">—</span>
+      </div>
+      <p class="banco-config-hint" id="banco-config-hint"></p>
+      <div class="skipo-metricas" id="skipo-metricas-wrap">
+        <div class="skipo-met-card">
+          <div class="skipo-met-label">Precio prom. ponderado (pendientes)</div>
+          <div class="skipo-met-val accent" id="skipo-met-ppm">—</div>
+        </div>
+        <div class="skipo-met-card">
+          <div class="skipo-met-label">Referencia ticker (solo compra)</div>
+          <div class="skipo-met-val" id="skipo-met-ticker">—</div>
+        </div>
+        <div class="skipo-met-card">
+          <div class="skipo-met-label">Ponderado vs ticker</div>
+          <div class="skipo-met-val" id="skipo-met-delta">—</div>
+        </div>
+        <div class="skipo-met-card">
+          <div class="skipo-met-label">Totales agregados</div>
+          <div class="skipo-met-val" id="skipo-met-agreg">—</div>
+        </div>
+      </div>
+      <p class="skipo-diag" id="skipo-pend-diag"></p>
+      <p style="font-size:11px;color:var(--ink3);max-width:900px;line-height:1.5;margin-bottom:10px">
+        Fuente: <code style="font-size:10px">GET /v1/converts</code> — compras USDT (CLP) con estado distinto de COMPLETED.
+        El costo promedio ponderado de estas órdenes alimenta el spread vs el ticker <strong>compra</strong> de Skipo (venta a Skipo ignorada).
+      </p>
+      <table class="banco-table">
+        <thead>
+          <tr>
+            <th>Creado</th>
+            <th>Estado API</th>
+            <th>Total CLP</th>
+            <th>USDT esperado</th>
+            <th>Precio CLP/USDT</th>
+            <th>ID / pagado</th>
+          </tr>
+        </thead>
+        <tbody id="skipo-pend-tbody">
+          <tr><td colspan="6" class="banco-empty">Cargando…</td></tr>
+        </tbody>
+      </table>
     </section>
 
     <!-- Posición Skipo Capacity -->
@@ -865,34 +944,6 @@
         </div>
 
       </div>
-    </section>
-
-    <!-- Skipo: mismos pendientes que la app (API converts ≠ COMPLETED) -->
-    <section class="skipo-pend-section" id="skipo-pend-section">
-      <div class="skipo-pend-head">
-        <p class="section-label" style="margin-bottom:0">Skipo &#8212; pagos pendientes</p>
-        <span class="skipo-pend-summary" id="skipo-pend-summary">—</span>
-      </div>
-      <p class="banco-config-hint" id="banco-config-hint"></p>
-      <p style="font-size:11px;color:var(--ink3);max-width:900px;line-height:1.5;margin-bottom:10px">
-        Misma fuente que la app: GET <code style="font-size:10px">/v1/converts</code>, órdenes de compra USDT (CLP) que
-        <strong>no</strong> están en estado COMPLETED. El sync a la base de datos del cockpit solo guarda las completadas.
-      </p>
-      <table class="banco-table">
-        <thead>
-          <tr>
-            <th>Creado</th>
-            <th>Estado API</th>
-            <th>Total CLP</th>
-            <th>USDT esperado</th>
-            <th>Precio CLP/USDT</th>
-            <th>ID / pagado</th>
-          </tr>
-        </thead>
-        <tbody id="skipo-pend-tbody">
-          <tr><td colspan="6" class="banco-empty">Cargando…</td></tr>
-        </tbody>
-      </table>
     </section>
 
     <!-- Trazabilidad: exchange email → conciliador → Banco Chile API -->
@@ -1199,6 +1250,20 @@ async function _apiGet(path) {
   } catch { return null; }
 }
 
+/** Skipo /v1/converts puede tardar; no cortar a los 8s. */
+async function _apiGetSlow(path, ms) {
+  if (!SR71_API) return null;
+  const t = ms || 28000;
+  try {
+    const r = await fetch(SR71_API + path, {
+      headers: _API_HEADERS,
+      signal: AbortSignal.timeout(t),
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
 async function _apiPost(path, body) {
   if (!SR71_API) return null;
   try {
@@ -1490,7 +1555,7 @@ function _buildTickerHTML() {
   const sep = '<span class="ticker-sep">&middot;</span>';
   const items = [
     'USD/CLP <b>' + (D.usdclp ? '$' + _fmt(D.usdclp) : '\u2014') + '</b>',
-    'SKIPO <b>' + (D.skipo ? '$' + _fmt(D.skipo) : '\u2014') + '</b>',
+    'SKIPO compra <b>' + (D.skipo ? '$' + _fmt(D.skipo) : '\u2014') + '</b>',
     'BYBIT <b>' + (D.bybit ? '$' + _fmt(D.bybit) : '\u2014') + '</b>',
     'OKX <b>' + (D.okx ? '$' + _fmt(D.okx) : '\u2014') + '</b>',
     'BINANCE <b>' + (D.binance ? '$' + _fmt(D.binance) : '\u2014') + '</b>',
@@ -1744,37 +1809,92 @@ function renderSkipoPendientes(data, bancoCfg) {
   const tbody = document.getElementById('skipo-pend-tbody');
   const sumEl = document.getElementById('skipo-pend-summary');
   const bankEl = document.getElementById('banco-config-hint');
+  const ppmEl = document.getElementById('skipo-met-ppm');
+  const tickEl = document.getElementById('skipo-met-ticker');
+  const delEl = document.getElementById('skipo-met-delta');
+  const agEl = document.getElementById('skipo-met-agreg');
+  const diagEl = document.getElementById('skipo-pend-diag');
+
   if (bankEl && bancoCfg) {
     bankEl.textContent = bancoCfg.banco_api_configurada
-      ? 'Banco Chile API: variables .env completas — el loop SR-71 consulta movimientos y llena la tabla de abajo.'
-      : 'Banco Chile API: faltan BANCO_CHILE_* en .env o credenciales inválidas — no habrá movimientos en DB.';
+      ? 'Banco Chile API: variables .env completas — el loop SR-71 consulta movimientos (tabla más abajo).'
+      : 'Banco Chile API: faltan BANCO_CHILE_* en .env o credenciales inválidas.';
   }
   if (!tbody) return;
+
+  function _clearMetrics() {
+    if (ppmEl) { ppmEl.textContent = '—'; ppmEl.className = 'skipo-met-val accent'; }
+    if (tickEl) tickEl.textContent = '—';
+    if (delEl) { delEl.textContent = '—'; delEl.className = 'skipo-met-val'; }
+    if (agEl) agEl.textContent = '—';
+    if (diagEl) diagEl.textContent = '';
+  }
+
   if (!data || (data.error && !Array.isArray(data.ordenes))) {
-    tbody.innerHTML = '<tr><td colspan="6" class="banco-empty">Sin respuesta Skipo (¿backend?)</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="banco-empty">Sin respuesta Skipo (¿backend o timeout?)</td></tr>';
     if (sumEl) sumEl.textContent = '—';
+    _clearMetrics();
     return;
   }
   if (data.configurado === false) {
     tbody.innerHTML = '<tr><td colspan="6" class="banco-empty">Skipo API no configurada (SKIPO_API_KEY / SKIPO_PRIVATE_KEY_PATH / SKIPO_API_BASE)</td></tr>';
     if (sumEl) sumEl.textContent = '—';
+    _clearMetrics();
     return;
   }
+
   const tot = data.totales || {};
+  const m = data.metricas || {};
   if (sumEl) {
     sumEl.textContent =
       (tot.n_ordenes || 0) + ' órdenes · $' + _fmt(tot.total_clp_pendiente || 0) + ' CLP · ' +
       _fmtD(tot.total_usdt_esperado, 2) + ' USDT';
   }
+
+  if (ppmEl) {
+    ppmEl.textContent = m.precio_promedio_ponderado_clp != null
+      ? '$' + _fmt(m.precio_promedio_ponderado_clp)
+      : (tot.n_ordenes ? '—' : 'N/A');
+    ppmEl.className = 'skipo-met-val accent';
+  }
+  if (tickEl) {
+    tickEl.textContent = m.precio_ticker_skipo_compra != null
+      ? '$' + _fmt(m.precio_ticker_skipo_compra)
+      : '—';
+  }
+  if (delEl) {
+    const dCl = m.delta_clp_ponderado_vs_ticker;
+    const dPct = m.delta_pct_ponderado_vs_ticker;
+    if (dCl != null && dPct != null) {
+      const sign = dCl >= 0 ? '+' : '';
+      delEl.textContent = sign + _fmtD(dCl, 2) + ' CLP · ' + sign + _fmtD(dPct, 3) + '%';
+      delEl.className = 'skipo-met-val ' + (dCl <= 0 ? 'ok' : 'bad');
+    } else {
+      delEl.textContent = '—';
+      delEl.className = 'skipo-met-val';
+    }
+  }
+  if (agEl) {
+    agEl.textContent = (m.costo_clp_agregado != null && m.usdt_agregado != null)
+      ? '$' + _fmt(m.costo_clp_agregado) + ' · ' + _fmtD(m.usdt_agregado, 2) + ' USDT'
+      : '—';
+  }
+  if (diagEl) {
+    const nraw = data.registros_crudos_api;
+    diagEl.textContent = (nraw != null)
+      ? 'Diagnóstico: API devolvió ' + nraw + ' filas en /v1/converts · ' + (tot.n_ordenes || 0) + ' clasificadas como pendientes (≠ COMPLETED).'
+      : '';
+  }
+
   const rows = data.ordenes || [];
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="banco-empty">No hay órdenes abiertas en API (o todas COMPLETED)</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="banco-empty">No hay órdenes pendientes en la respuesta (todas COMPLETED o filtros sin match). Revisa diagnóstico arriba.</td></tr>';
     return;
   }
   tbody.innerHTML = rows.map(function (o) {
     const fecha = (o.created_at || '').slice(0, 16).replace('T', ' ');
     const st = String(o.status || '—');
-    const stCls = /PEND|WAIT|PROC|ATRAS|DELAY|OVERDUE|OPEN/i.test(st) ? 'style="color:var(--red2);font-weight:700"' : '';
+    const stCls = /PEND|WAIT|PROC|ATRAS|DELAY|OVERDUE|OPEN|BACKLOG/i.test(st) ? 'style="color:var(--red2);font-weight:700"' : '';
     const paid = o.paid_clp != null ? (' · pagado $' + _fmt(o.paid_clp)) : '';
     const tid = (o.transaction_id || '').toString();
     return '<tr>' +
@@ -1884,7 +2004,7 @@ async function fetchAll() {
     _apiGet('/api/history?limit=48'),
     _apiGet('/api/skipo/detalle'),
     _apiGet('/api/operaciones/timeline?emails=55&pagos=100&banco=40'),
-    _apiGet('/api/skipo/pendientes'),
+    _apiGetSlow('/api/skipo/pendientes', 28000),
     _apiGet('/api/banco/config'),
   ]);
 
@@ -1896,7 +2016,7 @@ async function fetchAll() {
   const okxP     = okx     || snap?.okx_p2p;
   const binanceP = binance || snap?.binance_p2p;
   // Referencia Skipo para spread: precio al que compras USDT (compra), no venta a cliente.
-  const skipoP   = snap?.skipo_compra ?? snap?.skipo_venta ?? null;
+  const skipoP   = snap?.skipo_compra ?? null;
   const usdclpV  = usdclp  || snap?.usdclp;
 
   // Compute spread
