@@ -3,930 +3,977 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SR-71 P2P Radar — Blackbird Tech</title>
+<title>SR-71 — P2P Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:    #05060a;
+  --bg1:   #09090f;
+  --bg2:   #0d0d14;
+  --bg3:   #111118;
+  --line:  rgba(255,255,255,.05);
+  --line2: rgba(255,255,255,.09);
+  --gold:  #c9952a;
+  --gold2: #f0b83a;
+  --green: #00e676;
+  --green2:#00ff8855;
+  --red:   #ff3d57;
+  --amber: #ffaa00;
+  --text:  #eff0f6;
+  --sub:   #9b9dac;
+  --muted: #484a56;
+  --mono:  'Space Mono', 'Courier New', monospace;
+  --sans:  'Inter', -apple-system, sans-serif;
+}
+html{font-size:13px;background:var(--bg)}
+body{font-family:var(--sans);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-:root {
-  --bg:     #08090a;
-  --bg2:    #0f1012;
-  --bg3:    #141618;
-  --line:   #1e2124;
-  --gold:   #c9a84c;
-  --gold2:  #8f6f28;
-  --green:  #22c55e;
-  --red:    #ef4444;
-  --text:   #e2e8f0;
-  --muted:  #64748b;
-  --mono:   'IBM Plex Mono', 'Courier New', monospace;
-  --sans:   'Inter', -apple-system, sans-serif;
+/* ── Topbar ───────────────────────────────────────────────────────── */
+.topbar{
+  display:flex;align-items:center;gap:24px;
+  padding:0 28px;height:48px;
+  border-bottom:1px solid var(--line);
+  background:var(--bg1);
+  position:sticky;top:0;z-index:100;
 }
+.topbar-logo{
+  font-family:var(--mono);font-size:.75rem;font-weight:700;
+  letter-spacing:3px;color:var(--gold2);
+  display:flex;align-items:center;gap:8px;
+}
+.topbar-logo::before{
+  content:'▲';font-size:.6rem;opacity:.7;
+}
+.topbar-mid{display:flex;align-items:center;gap:20px;flex:1}
+.status-pill{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:.6rem;letter-spacing:1.5px;
+  color:var(--muted);padding:3px 9px;border:1px solid var(--line2);
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);transition:background .3s}
+.live-dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
+.topbar-right{display:flex;align-items:center;gap:24px;margin-left:auto}
+.topbar-stat{text-align:right}
+.topbar-stat .lbl{font-size:.55rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+.topbar-stat .val{font-family:var(--mono);font-size:.75rem;color:var(--sub)}
+#clockEl{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:1px}
 
-html { font-size: 13px; }
+/* ── Hero ─────────────────────────────────────────────────────────── */
+.hero{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:0;border-bottom:1px solid var(--line);
+}
+.hero-signal{
+  padding:40px 28px 36px;
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;justify-content:center;
+}
+.signal-badge{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:8px 20px;border:1px solid;
+  font-family:var(--mono);font-size:.85rem;letter-spacing:3px;font-weight:700;
+  margin-bottom:20px;width:fit-content;
+}
+.signal-badge.comprar{color:var(--green);border-color:var(--green);background:rgba(0,230,118,.04)}
+.signal-badge.neutral{color:var(--amber);border-color:var(--amber);background:rgba(255,170,0,.04)}
+.signal-badge.esperar{color:var(--red);  border-color:var(--red);  background:rgba(255,61,87,.04)}
+.signal-badge .dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+.signal-desc{font-size:.75rem;color:var(--sub);line-height:1.7;max-width:320px}
+.signal-desc strong{color:var(--text)}
+.signal-context{
+  margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;
+}
+.sc-item .sc-lbl{font-size:.55rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.sc-item .sc-val{font-family:var(--mono);font-size:.8rem;color:var(--sub)}
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--sans);
-  min-height: 100vh;
-  overflow-x: hidden;
+.hero-margin{
+  padding:40px 36px 36px;
+  display:flex;flex-direction:column;justify-content:center;
 }
+.margin-label{font-size:.6rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.margin-number{
+  font-family:var(--mono);font-weight:700;
+  line-height:1;margin-bottom:8px;
+  transition:color .4s;
+}
+.margin-number.pos{color:var(--green);font-size:4rem}
+.margin-number.neg{color:var(--red);  font-size:4rem}
+.margin-number.neu{color:var(--amber);font-size:4rem}
+.margin-sub{font-size:.7rem;color:var(--sub);margin-bottom:28px}
+.margin-sub span{font-family:var(--mono);color:var(--text)}
+.margin-breakdown{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line)}
+.mb-cell{background:var(--bg2);padding:12px 14px}
+.mb-cell .mb-lbl{font-size:.55rem;letter-spacing:.8px;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
+.mb-cell .mb-val{font-family:var(--mono);font-size:.78rem}
+.mb-cell .mb-val.pos{color:var(--green)}
+.mb-cell .mb-val.neg{color:var(--red)}
 
-/* ── Topbar ─────────────────────────────────────────────────────── */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 20px;
-  border-bottom: 1px solid var(--line);
-  background: var(--bg2);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+/* ── Price strip ──────────────────────────────────────────────────── */
+.strip{
+  display:grid;grid-template-columns:repeat(5,1fr);
+  border-bottom:1px solid var(--line);
 }
-.tl { display: flex; align-items: center; gap: 14px; }
-.tr { display: flex; align-items: center; gap: 16px; font-family: var(--mono); font-size: 0.69rem; color: var(--muted); }
+.strip-card{
+  padding:18px 20px;border-right:1px solid var(--line);
+  transition:background .15s;cursor:default;
+  position:relative;overflow:hidden;
+}
+.strip-card:last-child{border-right:none}
+.strip-card.best::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:var(--green);
+}
+.strip-card.worst::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:var(--red);
+}
+.strip-card:hover{background:var(--bg2)}
+.sc-name{font-size:.55rem;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.sc-name .tag{padding:1px 5px;font-size:.48rem;border:1px solid var(--line2);color:var(--muted);letter-spacing:.5px}
+.sc-price{font-family:var(--mono);font-size:1.4rem;font-weight:700;color:var(--text);margin-bottom:4px;transition:color .2s}
+.sc-price.flash{animation:flash .4s ease}
+@keyframes flash{0%{color:var(--green)}100%{color:var(--text)}}
+.sc-spread{font-family:var(--mono);font-size:.65rem}
+.sc-spread.pos{color:var(--green)}
+.sc-spread.neg{color:var(--red)}
+.sc-spread.neu{color:var(--muted)}
+.sc-vol{font-size:.55rem;color:var(--muted);margin-top:3px}
 
-.logo {
-  font-family: var(--mono);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 2px;
-  color: var(--gold);
+/* ── Main grid ────────────────────────────────────────────────────── */
+.main-grid{
+  display:grid;
+  grid-template-columns:1fr 340px;
+  gap:0;
+  min-height:360px;
+  border-bottom:1px solid var(--line);
 }
-.logo em { color: var(--muted); font-style: normal; font-weight: 400; }
+.chart-panel{
+  padding:20px 24px;border-right:1px solid var(--line);
+}
+.panel-title{
+  font-size:.55rem;letter-spacing:1.5px;color:var(--muted);
+  text-transform:uppercase;margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+}
+.panel-title::after{content:'';flex:1;height:1px;background:var(--line)}
+.chart-tabs{display:flex;gap:2px;margin-bottom:14px}
+.ct{
+  font-family:var(--mono);font-size:.58rem;letter-spacing:1px;
+  padding:4px 12px;cursor:pointer;color:var(--muted);
+  border:1px solid transparent;transition:all .15s;
+}
+.ct.on{color:var(--text);border-color:var(--line2)}
+.ct:hover:not(.on){color:var(--sub)}
+.chart-wrap{height:220px;position:relative}
 
-.chip {
-  font-family: var(--mono);
-  font-size: 0.6rem;
-  letter-spacing: 1.2px;
-  color: var(--muted);
-  border: 1px solid var(--line);
-  padding: 1px 6px;
-  text-transform: uppercase;
+.side-col{display:flex;flex-direction:column}
+.side-block{
+  padding:20px 20px;border-bottom:1px solid var(--line);
+  flex:1;
 }
+.side-block:last-child{border-bottom:none}
+.side-metric{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.sm-item .sm-lbl{font-size:.52rem;letter-spacing:.8px;color:var(--muted);text-transform:uppercase;margin-bottom:3px}
+.sm-item .sm-val{font-family:var(--mono);font-size:.85rem;color:var(--text)}
+.sm-item .sm-val.dim{color:var(--sub);font-size:.78rem}
+.sm-item .sm-val.red{color:var(--red)}
+.sm-item .sm-val.green{color:var(--green)}
+.sm-item .sm-val.amber{color:var(--amber)}
+.pnl-bar{
+  height:3px;background:var(--bg3);margin-top:14px;border-radius:2px;overflow:hidden;
+}
+.pnl-fill{height:100%;border-radius:2px;transition:width .6s,background .4s}
 
-.usdclp-pill {
-  font-family: var(--mono);
-  font-size: 0.69rem;
-  color: var(--text);
-  border-left: 2px solid var(--gold2);
-  padding-left: 8px;
+/* Pagos */
+.pago-list{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.pago-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;background:var(--bg3);font-size:.65rem;
 }
-.usdclp-pill span { color: var(--gold); }
+.pago-banco{font-family:var(--mono);color:var(--sub);font-size:.58rem;letter-spacing:.5px}
+.pago-monto{font-family:var(--mono);color:var(--green);font-size:.72rem}
+.pago-empty{font-size:.65rem;color:var(--muted);margin-top:10px;text-align:center;padding:16px}
 
-.live-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  display: inline-block;
-  opacity: 1;
-  transition: opacity 0.2s;
+/* ── Offers ───────────────────────────────────────────────────────── */
+.offers-section{padding:0}
+.offers-header{
+  display:flex;align-items:center;
+  padding:12px 24px;border-bottom:1px solid var(--line);
+  gap:16px;
 }
-.live-dot.offline { background: var(--red); }
+.offers-tabs{display:flex;gap:2px}
+.otab{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:1px;
+  padding:4px 14px;cursor:pointer;color:var(--muted);
+  border:1px solid transparent;transition:all .15s;
+}
+.otab.on{color:var(--text);border-color:var(--line2)}
+.otab:hover:not(.on){color:var(--sub)}
+.refresh-btn{
+  margin-left:auto;font-family:var(--mono);font-size:.58rem;
+  padding:4px 12px;border:1px solid var(--line2);
+  color:var(--muted);cursor:pointer;transition:all .15s;background:transparent;letter-spacing:1px;
+}
+.refresh-btn:hover{border-color:var(--gold);color:var(--gold)}
+.offers-table{width:100%;border-collapse:collapse}
+.offers-table th{
+  font-size:.52rem;letter-spacing:1px;color:var(--muted);
+  text-align:left;padding:8px 24px;border-bottom:1px solid var(--line);
+  text-transform:uppercase;font-weight:400;
+}
+.offers-table td{
+  font-family:var(--mono);font-size:.68rem;
+  padding:9px 24px;border-bottom:1px solid var(--line);
+  color:var(--sub);transition:background .1s;
+}
+.offers-table tr:hover td{background:var(--bg2)}
+.offers-table td:first-child{color:var(--text)}
+.offers-table td.green{color:var(--green)}
+.offers-table td.red{color:var(--red)}
+.offers-empty{padding:32px;text-align:center;color:var(--muted);font-size:.65rem;font-family:var(--mono)}
 
-button.refresh {
-  font-family: var(--mono);
-  font-size: 0.6rem;
-  letter-spacing: 1px;
-  color: var(--muted);
-  background: none;
-  border: 1px solid var(--line);
-  padding: 2px 8px;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+/* ── Footer ───────────────────────────────────────────────────────── */
+.footer{
+  padding:16px 28px;display:flex;align-items:center;gap:16px;
+  border-top:1px solid var(--line);
+  font-size:.55rem;letter-spacing:1px;color:var(--muted);
+  font-family:var(--mono);
 }
-button.refresh:hover { color: var(--text); border-color: var(--muted); }
+.footer-dot{width:4px;height:4px;border-radius:50%;background:var(--muted)}
 
-/* ── Main ───────────────────────────────────────────────────────── */
-.main { padding: 14px 20px; max-width: 1500px; margin: 0 auto; }
+/* ── Scrollbar ────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bg3)}
 
-/* ── Price grid ─────────────────────────────────────────────────── */
-.price-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-  margin-bottom: 1px;
+/* ── Responsive ───────────────────────────────────────────────────── */
+@media(max-width:1100px){
+  .hero{grid-template-columns:1fr}
+  .hero-signal{border-right:none;border-bottom:1px solid var(--line)}
+  .main-grid{grid-template-columns:1fr}
+  .chart-panel{border-right:none}
+  .strip{grid-template-columns:repeat(3,1fr)}
+  .strip-card:nth-child(n+4){display:none}
+  .side-col{flex-direction:row;overflow-x:auto}
+  .side-block{min-width:200px;border-bottom:none;border-right:1px solid var(--line)}
 }
-@media (max-width: 1000px) { .price-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 640px)  { .price-grid { grid-template-columns: repeat(2, 1fr); } }
-
-.price-card {
-  background: var(--bg2);
-  padding: 14px 16px;
-  position: relative;
-}
-
-.card-label {
-  font-family: var(--sans);
-  font-size: 0.62rem;
-  font-weight: 500;
-  letter-spacing: 0.8px;
-  color: var(--muted);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.card-price {
-  font-family: var(--mono);
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: -0.5px;
-  transition: opacity 0.2s;
-}
-.card-price.updating { opacity: 0.4; }
-
-.card-sub {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  color: var(--muted);
-  margin-top: 5px;
-}
-.card-sub .val-green { color: var(--green); }
-.card-sub .val-red   { color: var(--red); }
-
-/* ── Opportunity bar ────────────────────────────────────────────── */
-.opp-bar {
-  background: var(--bg2);
-  border: 1px solid var(--line);
-  border-top: none;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  color: var(--muted);
-  margin-bottom: 14px;
-}
-.opp-val { color: var(--green); font-weight: 600; font-size: 0.9rem; }
-.opp-ex  { color: var(--gold); letter-spacing: 1px; }
-.opp-sep { color: var(--line); }
-.opp-ts  { margin-left: auto; color: var(--muted); }
-
-/* ── Skipo Intel row ──────────────────────────────────────────── */
-.skipo-intel-row {
-  background: var(--bg2);
-  border: 1px solid var(--gold2);
-  margin-bottom: 14px;
-  padding: 10px 16px;
-}
-.si-header {
-  font-family: var(--sans);
-  font-size: 0.58rem;
-  letter-spacing: 1.5px;
-  color: var(--gold);
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-.si-cells {
-  display: flex;
-  gap: 0;
-  flex-wrap: wrap;
-}
-.si-cell {
-  flex: 1;
-  min-width: 100px;
-  border-right: 1px solid var(--line);
-  padding: 0 14px 0 0;
-  margin-right: 14px;
-}
-.si-cell:last-child { border-right: none; margin-right: 0; }
-.si-label { font-size: 0.55rem; color: var(--muted); letter-spacing: 0.8px; margin-bottom: 3px; }
-.si-val   { font-family: var(--mono); font-size: 0.82rem; color: var(--text); font-weight: 500; }
-.signal-comprar { color: var(--green) !important; }
-.signal-neutral { color: var(--gold) !important; }
-.signal-esperar { color: var(--red) !important; }
-
-/* ── Bottom grid ────────────────────────────────────────────────── */
-.bottom-grid {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 14px;
-}
-@media (max-width: 1100px) { .bottom-grid { grid-template-columns: 1fr; } }
-
-/* ── Panel ──────────────────────────────────────────────────────── */
-.panel {
-  background: var(--bg2);
-  border: 1px solid var(--line);
-}
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 9px 14px;
-  border-bottom: 1px solid var(--line);
-}
-.panel-title {
-  font-family: var(--sans);
-  font-size: 0.62rem;
-  font-weight: 500;
-  letter-spacing: 0.8px;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-
-/* ── Exchange tabs ──────────────────────────────────────────────── */
-.tabs {
-  display: flex;
-  border-bottom: 1px solid var(--line);
-}
-.tab {
-  padding: 6px 14px;
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  letter-spacing: 1px;
-  color: var(--muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s;
-  user-select: none;
-}
-.tab:hover  { color: var(--text); }
-.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-
-/* ── Offers table ───────────────────────────────────────────────── */
-.offers-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-.offers-table th {
-  text-align: left;
-  padding: 6px 12px;
-  font-family: var(--sans);
-  font-size: 0.6rem;
-  font-weight: 500;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--muted);
-  border-bottom: 1px solid var(--line);
-}
-.offers-table td {
-  padding: 7px 12px;
-  border-bottom: 1px solid #0d0f10;
-  font-family: var(--mono);
-}
-.offers-table tr:last-child td { border-bottom: none; }
-.offers-table tr:hover td { background: #111315; }
-.t-price  { color: var(--text); font-weight: 500; font-size: 0.82rem; }
-.t-muted  { color: var(--muted); }
-.t-green  { color: var(--green); }
-.t-nick   { color: var(--gold2); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.t-methods { display: flex; flex-wrap: wrap; gap: 2px; }
-.method-tag {
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  color: var(--muted);
-  border: 1px solid var(--line);
-  padding: 1px 4px;
-  white-space: nowrap;
-}
-.empty { padding: 28px; text-align: center; color: var(--muted); font-family: var(--mono); font-size: 0.72rem; }
-
-/* ── Chart ──────────────────────────────────────────────────────── */
-.chart-panel { display: flex; flex-direction: column; }
-.chart-wrap  { flex: 1; padding: 10px; min-height: 260px; }
-.chart-tabs  { display: flex; gap: 4px; padding: 0 14px; }
-.chart-tab {
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.8px;
-  padding: 2px 8px;
-  cursor: pointer;
-  color: var(--muted);
-  border: 1px solid transparent;
-  transition: color 0.15s;
-}
-.chart-tab.active { color: var(--gold); border-color: var(--line); }
-
-/* ── Footer ─────────────────────────────────────────────────────── */
-.footer {
-  text-align: center;
-  padding: 12px;
-  font-family: var(--mono);
-  font-size: 0.6rem;
-  color: var(--muted);
-  border-top: 1px solid var(--line);
-  margin-top: 14px;
-  letter-spacing: 1px;
+@media(max-width:700px){
+  .strip{grid-template-columns:1fr 1fr}
+  .hero-margin{padding:24px 20px}
+  .margin-number{font-size:2.8rem !important}
+  .topbar-right .topbar-stat:not(:first-child){display:none}
 }
 
-/* ── Spinner ─────────────────────────────────────────────────────── */
-.spinner {
-  display: inline-block; width: 10px; height: 10px;
-  border: 1px solid var(--line);
-  border-top-color: var(--muted);
-  border-radius: 50%;
-  animation: spin .5s linear infinite;
-  vertical-align: middle;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+/* ── Utility ──────────────────────────────────────────────────────── */
+.mono{font-family:var(--mono)}
 </style>
 </head>
 <body>
 
-<!-- ── Topbar ──────────────────────────────────────────────────────────── -->
-<div class="topbar">
-  <div class="tl">
-    <div class="logo">SR-71<em> / P2P RADAR</em></div>
-    <div class="chip">CHILE</div>
-    <div class="chip">USDT/CLP</div>
-    <div class="usdclp-pill" id="usdclpPill" style="display:none">
-      USD/CLP <span id="usdclpVal">—</span>
+<!-- ── Topbar ─────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="topbar-logo">SR-71</div>
+  <div class="topbar-mid">
+    <div class="status-pill">
+      <span class="live-dot" id="liveDot"></span>
+      <span id="liveLabel">INICIANDO</span>
     </div>
   </div>
-  <div class="tr">
-    <span class="live-dot" id="liveDot"></span>
-    <span id="liveLabel">CONECTANDO</span>
-    <span id="lastUpdate"></span>
-    <button class="refresh" onclick="forceRefresh()">REFRESH</button>
+  <div class="topbar-right">
+    <div class="topbar-stat">
+      <div class="lbl">USD/CLP</div>
+      <div class="val mono" id="usdclpTop">—</div>
+    </div>
+    <div class="topbar-stat">
+      <div class="lbl">Actualizado</div>
+      <div class="val mono" id="lastTs">—</div>
+    </div>
+    <div id="clockEl">—</div>
+  </div>
+</header>
+
+<!-- ── Hero ───────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-signal">
+    <div class="signal-badge neutral" id="signalBadge">
+      <span class="dot"></span>
+      <span id="signalText">CALCULANDO</span>
+    </div>
+    <p class="signal-desc" id="signalDesc">
+      Obteniendo precios de mercado...
+    </p>
+    <div class="signal-context">
+      <div class="sc-item">
+        <div class="sc-lbl">Skipo compra</div>
+        <div class="sc-val" id="skipoCtx">—</div>
+      </div>
+      <div class="sc-item">
+        <div class="sc-lbl">Mejor exchange</div>
+        <div class="sc-val" id="bestExCtx">—</div>
+      </div>
+      <div class="sc-item">
+        <div class="sc-lbl">Spread activo</div>
+        <div class="sc-val" id="spreadCtx">—</div>
+      </div>
+      <div class="sc-item">
+        <div class="sc-lbl">Ventana 24h máx</div>
+        <div class="sc-val" id="maxSpreadCtx">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-margin">
+    <div class="margin-label">Ganancia bruta por USDT</div>
+    <div class="margin-number neu" id="marginNumber">—</div>
+    <div class="margin-sub">vendiendo en <span id="marginEx">—</span> a <span id="marginPrice">—</span></div>
+    <div class="margin-breakdown">
+      <div class="mb-cell">
+        <div class="mb-lbl">Compra Skipo</div>
+        <div class="mb-val" id="mb-skipo">—</div>
+      </div>
+      <div class="mb-cell">
+        <div class="mb-lbl">Venta exchange</div>
+        <div class="mb-val" id="mb-venta">—</div>
+      </div>
+      <div class="mb-cell">
+        <div class="mb-lbl">Spread %</div>
+        <div class="mb-val" id="mb-pct">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Price strip ────────────────────────────────────────────────── -->
+<div class="strip" id="priceStrip">
+  <div class="strip-card" id="c-skipo">
+    <div class="sc-name">Skipo <span class="tag">COMPRA</span></div>
+    <div class="sc-price" id="p-skipo">—</div>
+    <div class="sc-spread neu" id="s-skipo">CLP/USDT</div>
+    <div class="sc-vol" id="v-skipo">venta: —</div>
+  </div>
+  <div class="strip-card" id="c-bybit">
+    <div class="sc-name">Bybit <span class="tag">P2P</span></div>
+    <div class="sc-price" id="p-bybit">—</div>
+    <div class="sc-spread neu" id="s-bybit">—</div>
+    <div class="sc-vol" id="v-bybit">—</div>
+  </div>
+  <div class="strip-card" id="c-okx">
+    <div class="sc-name">OKX <span class="tag">P2P</span></div>
+    <div class="sc-price" id="p-okx">—</div>
+    <div class="sc-spread neu" id="s-okx">—</div>
+    <div class="sc-vol" id="v-okx">—</div>
+  </div>
+  <div class="strip-card" id="c-binance">
+    <div class="sc-name">Binance <span class="tag">P2P</span></div>
+    <div class="sc-price" id="p-binance">—</div>
+    <div class="sc-spread neu" id="s-binance">—</div>
+    <div class="sc-vol" id="v-binance">—</div>
+  </div>
+  <div class="strip-card" id="c-bitget">
+    <div class="sc-name">Bitget <span class="tag">P2P</span></div>
+    <div class="sc-price" id="p-bitget">—</div>
+    <div class="sc-spread neu" id="s-bitget">—</div>
+    <div class="sc-vol"></div>
   </div>
 </div>
 
-<!-- ── Main ───────────────────────────────────────────────────────────── -->
-<div class="main">
-
-  <!-- Price grid -->
-  <div class="price-grid" id="priceGrid">
-    <div class="price-card" id="card-skipo">
-      <div class="card-label">Skipo compra</div>
-      <div class="card-price" id="p-skipo">—</div>
-      <div class="card-sub" id="s-skipo">venta: —</div>
+<!-- ── Main grid ──────────────────────────────────────────────────── -->
+<div class="main-grid">
+  <div class="chart-panel">
+    <div class="panel-title">Spread histórico</div>
+    <div class="chart-tabs">
+      <div class="ct on" onclick="setChart('spread')" id="ct-s">SPREAD %</div>
+      <div class="ct" onclick="setChart('price')"  id="ct-p">PRECIO CLP</div>
+      <div class="ct" onclick="setChart('margin')" id="ct-m">$ / USDT</div>
     </div>
-    <div class="price-card" id="card-bybit">
-      <div class="card-label">Bybit P2P</div>
-      <div class="card-price" id="p-bybit">—</div>
-      <div class="card-sub" id="s-bybit">spread: —</div>
-    </div>
-    <div class="price-card" id="card-okx">
-      <div class="card-label">OKX P2P</div>
-      <div class="card-price" id="p-okx">—</div>
-      <div class="card-sub" id="s-okx">spread: —</div>
-    </div>
-    <div class="price-card" id="card-binance">
-      <div class="card-label">Binance P2P</div>
-      <div class="card-price" id="p-binance">—</div>
-      <div class="card-sub" id="s-binance">spread: —</div>
-    </div>
-    <div class="price-card" id="card-bitget">
-      <div class="card-label">Bitget P2P</div>
-      <div class="card-price" id="p-bitget">—</div>
-      <div class="card-sub" id="s-bitget">spread: —</div>
-    </div>
+    <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
   </div>
-
-  <!-- Opportunity bar -->
-  <div class="opp-bar">
-    <span>MEJOR</span>
-    <span class="opp-sep">//</span>
-    <span class="opp-val" id="oppSpread">—</span>
-    <span>spread en</span>
-    <span class="opp-ex" id="oppEx">—</span>
-    <span class="opp-ts" id="oppTs"></span>
-  </div>
-
-  <!-- Skipo Intel -->
-  <div class="skipo-intel-row" id="skipoIntelRow" style="display:none">
-    <div class="si-header">SKIPO INTEL</div>
-    <div class="si-cells">
-      <div class="si-cell">
-        <div class="si-label">SEÑAL</div>
-        <div class="si-val signal-neutral" id="siSignal">—</div>
-      </div>
-      <div class="si-cell">
-        <div class="si-label">SKIPO COMPRA</div>
-        <div class="si-val" id="siSkipo">—</div>
-      </div>
-      <div class="si-cell">
-        <div class="si-label">MARGEN BYBIT</div>
-        <div class="si-val" id="siBybit">—</div>
-      </div>
-      <div class="si-cell">
-        <div class="si-label">MARGEN OKX</div>
-        <div class="si-val" id="siOkx">—</div>
-      </div>
-      <div class="si-cell">
-        <div class="si-label">MARGEN BINANCE</div>
-        <div class="si-val" id="siBinance">—</div>
-      </div>
-      <div class="si-cell">
-        <div class="si-label">USD/CLP</div>
-        <div class="si-val" id="siUsdClp">—</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bottom grid -->
-  <div class="bottom-grid">
-
-    <!-- Offers -->
-    <div class="panel">
-      <div class="panel-header">
-        <span class="panel-title">Top Ofertas</span>
-        <button class="refresh" onclick="loadOfertas()" id="ofBtn">REFRESH</button>
-      </div>
-      <div class="tabs" id="offersTabs">
-        <div class="tab active" data-ex="bybit"   onclick="switchTab('bybit')">BYBIT</div>
-        <div class="tab"        data-ex="okx"     onclick="switchTab('okx')">OKX</div>
-        <div class="tab"        data-ex="binance" onclick="switchTab('binance')">BINANCE</div>
-        <div class="tab"        data-ex="bitget"  onclick="switchTab('bitget')">BITGET</div>
-      </div>
-      <div id="offersContent">
-        <div class="empty">Cargando ofertas...</div>
-      </div>
-    </div>
-
-    <!-- Chart -->
-    <div class="panel chart-panel">
-      <div class="panel-header">
-        <span class="panel-title">Spread histórico</span>
-        <div class="chart-tabs">
-          <div class="chart-tab active" onclick="switchChartMode('spread')" id="ct-spread">SPREAD</div>
-          <div class="chart-tab"        onclick="switchChartMode('price')"  id="ct-price">PRECIO</div>
+  <div class="side-col">
+    <!-- Posición -->
+    <div class="side-block">
+      <div class="panel-title">Posición actual</div>
+      <div class="side-metric">
+        <div class="sm-item">
+          <div class="sm-lbl">USDT disponible</div>
+          <div class="sm-val" id="posUsdt">—</div>
+        </div>
+        <div class="sm-item">
+          <div class="sm-lbl">Precio promedio</div>
+          <div class="sm-val dim" id="posPP">—</div>
+        </div>
+        <div class="sm-item">
+          <div class="sm-lbl">P&amp;L vs Bybit</div>
+          <div class="sm-val" id="posPnl">—</div>
+        </div>
+        <div class="sm-item">
+          <div class="sm-lbl">Compras (30d)</div>
+          <div class="sm-val dim" id="posN">—</div>
         </div>
       </div>
-      <div class="chart-wrap">
-        <canvas id="spreadChart"></canvas>
+      <div class="pnl-bar"><div class="pnl-fill" id="pnlFill" style="width:0%;background:var(--muted)"></div></div>
+    </div>
+    <!-- Pagos -->
+    <div class="side-block">
+      <div class="panel-title">Pagos hoy <span id="pagosCount" style="font-family:var(--mono);font-size:.65rem;color:var(--gold);margin-left:auto;font-weight:700"></span></div>
+      <div id="pagosList"><div class="pago-empty">Conecta SR-71 para ver pagos</div></div>
+    </div>
+    <!-- Skipo Intel -->
+    <div class="side-block">
+      <div class="panel-title">Skipo intel</div>
+      <div class="side-metric">
+        <div class="sm-item">
+          <div class="sm-lbl">Quality score</div>
+          <div class="sm-val" id="skipoScore">—</div>
+        </div>
+        <div class="sm-item">
+          <div class="sm-lbl">Slippage prom</div>
+          <div class="sm-val dim" id="skipoSlip">—</div>
+        </div>
+        <div class="sm-item">
+          <div class="sm-lbl">Mejor hora</div>
+          <div class="sm-val dim" id="skipoBestH">—</div>
+        </div>
+        <div class="sm-item">
+          <div class="sm-lbl">Mejor día</div>
+          <div class="sm-val dim" id="skipoBestD">—</div>
+        </div>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ── Footer ─────────────────────────────────────────────────────────── -->
-<div class="footer">
-  BLACKBIRD TECH SpA &nbsp;·&nbsp; SR-71 P2P INTELLIGENCE PLATFORM &nbsp;·&nbsp; SANTIAGO CHILE
+<!-- ── Offers ─────────────────────────────────────────────────────── -->
+<div class="offers-section">
+  <div class="offers-header">
+    <div class="panel-title" style="margin-bottom:0">Top compradores USDT/CLP</div>
+    <div class="offers-tabs">
+      <div class="otab on" data-ex="bybit"   onclick="switchOTab('bybit')">BYBIT</div>
+      <div class="otab"    data-ex="okx"     onclick="switchOTab('okx')">OKX</div>
+      <div class="otab"    data-ex="binance" onclick="switchOTab('binance')">BINANCE</div>
+    </div>
+    <button class="refresh-btn" onclick="fetchOffers()">↻ REFRESH</button>
+  </div>
+  <div id="offersBody">
+    <div class="offers-empty">Cargando ofertas...</div>
+  </div>
 </div>
 
+<!-- ── Footer ─────────────────────────────────────────────────────── -->
+<footer class="footer">
+  <span>BLACKBIRD TECH SpA</span>
+  <span class="footer-dot"></span>
+  <span>SR-71 P2P INTELLIGENCE</span>
+  <span class="footer-dot"></span>
+  <span>SANTIAGO CHILE</span>
+  <span style="margin-left:auto;font-size:.5rem" id="buildInfo">—</span>
+</footer>
+
 <script>
-// ── State ─────────────────────────────────────────────────────────────────
+'use strict';
+
+// ── State ──────────────────────────────────────────────────────────
 const S = {
-  snap:      null,
-  history:   [],
-  ofertas:   {},
-  tab:       'bybit',
-  chartMode: 'spread',
-  ws:        null,
-  wsRetry:   0,
-  chart:     null,
-  hasBackend: false,
+  skipo: null, bybit: null, okx: null, binance: null,
+  usdclp: null, hist: [], ofertas: {}, otab: 'bybit',
+  chartMode: 'spread', chart: null, ws: null,
+  bestEx: null, bestPrice: null,
 };
 
-// ── Formatters ────────────────────────────────────────────────────────────
-const fmtClp   = v => v == null ? '—' : '$' + Number(v).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-const fmtPct   = v => v == null ? '—' : (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
-const fmtUsdt  = v => v == null ? '—' : Number(v).toLocaleString('es-CL', {minimumFractionDigits: 0}) + ' USDT';
-const fmtTime  = ts => ts ? ts.replace('T', ' ').slice(0, 16) : '';
-const esc      = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const setEl    = (id, val) => { const n = typeof id === 'string' ? document.getElementById(id) : id; if (n) n.textContent = val; };
+// Backend detection
+const BACKEND = (() => {
+  const h = window.location.hostname;
+  if(h === 'localhost' || h === '127.0.0.1') return 'http://localhost:8080';
+  if(window.SR71_API) return window.SR71_API;
+  return null;
+})();
 
-// ── Snapshot render ───────────────────────────────────────────────────────
-const EXCH = ['bybit', 'okx', 'binance', 'bitget'];
-const SPK  = { bybit:'spread_skipo_bybit', okx:'spread_skipo_okx', binance:'spread_skipo_binance', bitget:'spread_skipo_bitget' };
+// ── Formatting ────────────────────────────────────────────────────
+const fmtN = v => v == null ? '—' : Math.round(v).toLocaleString('es-CL').replace(/,/g,'.');
+const fmtP = (v,d=2) => v == null ? '—' : `${v>=0?'+':''}${v.toFixed(d)}%`;
+const fmtM = v => v == null ? '—' : `${v>=0?'+':''}$${Math.abs(v).toFixed(2)}`;
+const fmtT = ts => { if(!ts) return '—'; const d=new Date(ts.replace('T',' ')); return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; };
+const set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+const cls = (id,c) => { const e=document.getElementById(id); if(e) e.className=c; };
 
-function renderSnapshot(snap) {
-  if (!snap || !snap.timestamp) return;
-  S.snap = snap;
+// ── Clock ─────────────────────────────────────────────────────────
+setInterval(()=>{
+  const n=new Date();
+  const s=`${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')}:${n.getSeconds().toString().padStart(2,'0')} CL`;
+  set('clockEl',s);
+},1000);
 
-  // Skipo
-  flashUpdate('p-skipo', fmtClp(snap.skipo_compra));
-  setEl('s-skipo', 'venta: ' + fmtClp(snap.skipo_venta));
+// ── Live status ───────────────────────────────────────────────────
+function setLive(on, label) {
+  const d = document.getElementById('liveDot');
+  const l = document.getElementById('liveLabel');
+  if(d) d.className = 'live-dot' + (on?' on':'');
+  if(l) l.textContent = label;
+}
 
-  // Exchanges
-  EXCH.forEach(ex => {
-    const precio = snap[ex + '_p2p'];
-    const spread = snap[SPK[ex]];
+// ── Render snapshot ───────────────────────────────────────────────
+function renderSnap(snap) {
+  if(!snap) return;
+  S.skipo   = snap.skipo_compra;
+  S.bybit   = snap.bybit_p2p;
+  S.okx     = snap.okx_p2p;
+  S.binance = snap.binance_p2p;
+  if(snap.usdclp) { S.usdclp = snap.usdclp; set('usdclpTop', fmtN(snap.usdclp)); }
+  set('lastTs', fmtT(snap.timestamp));
+  renderPrices();
+  renderHero();
+}
 
-    flashUpdate('p-' + ex, fmtClp(precio));
+function renderPrices() {
+  const sk = S.skipo;
+  const prices = { bybit: S.bybit, okx: S.okx, binance: S.binance };
 
-    const sub = document.getElementById('s-' + ex);
-    if (sub) {
-      if (spread == null) {
-        sub.innerHTML = 'spread: <span>—</span>';
-      } else {
-        const cls = spread >= 0 ? 'val-green' : 'val-red';
-        sub.innerHTML = 'spread: <span class="' + cls + '">' + fmtPct(spread) + '</span>';
-      }
+  // Skipo card
+  flash('p-skipo', fmtN(sk));
+  set('v-skipo', sk ? `venta: $${fmtN(sk && sk*1.012)?.replace('$','')}` : 'venta: —');
+
+  // Exchange cards — compute spreads
+  let best = null, bestEx = null;
+  const spreads = {};
+  Object.entries(prices).forEach(([ex, p]) => {
+    if(!p || !sk) return;
+    const sp = (p - sk) / sk * 100;
+    spreads[ex] = sp;
+    if(best === null || sp > best) { best = sp; bestEx = ex; }
+    flash('p-' + ex, fmtN(p));
+    const sel = document.getElementById('s-' + ex);
+    if(sel) {
+      sel.textContent = fmtP(sp);
+      sel.className = 'sc-spread ' + (sp >= 0.5 ? 'pos' : sp < 0 ? 'neg' : 'neu');
+    }
+    set('v-' + ex, `±${Math.abs((p||0)*1000/1000-Math.round(p||0)).toFixed(0)} vol`);
+  });
+  S.bestEx = bestEx;
+  S.bestPrice = bestEx ? prices[bestEx] : null;
+
+  // Highlight best/worst cards
+  ['bybit','okx','binance','bitget'].forEach(ex => {
+    const card = document.getElementById('c-' + ex);
+    if(!card) return;
+    if(ex === bestEx) card.className = 'strip-card best';
+    else {
+      const worst = Object.entries(spreads).filter(([,v])=>v<0).sort((a,b)=>a[1]-b[1])[0];
+      card.className = 'strip-card' + (worst && worst[0]===ex ? ' worst' : '');
     }
   });
-
-  // Opportunity
-  setEl('oppSpread', fmtPct(snap.mejor_spread));
-  setEl('oppEx',     snap.mejor_exchange ? snap.mejor_exchange.toUpperCase() : '—');
-  setEl('oppTs',     fmtTime(snap.timestamp) + ' CL');
-  setEl('lastUpdate', fmtTime(snap.timestamp) + ' CL');
-
-  // USD/CLP if present
-  if (snap.usdclp != null) {
-    setEl('usdclpVal', fmtClp(snap.usdclp));
-    document.getElementById('usdclpPill').style.display = '';
-  }
-
-  // Skipo Intel row
-  renderSkipoIntel(snap);
 }
 
-function renderSkipoIntel(snap) {
-  const row = document.getElementById('skipoIntelRow');
-  if (!row || !snap.skipo_compra) return;
-  row.style.display = '';
+function renderHero() {
+  const sk = S.skipo;
+  const bp = S.bestPrice;
+  const be = S.bestEx;
+  const prices = { bybit: S.bybit, okx: S.okx, binance: S.binance };
 
-  const sk = snap.skipo_compra;
-
-  // Signal basada en mejor spread
-  const ms = snap.mejor_spread;
-  let signal = 'SIN DATOS', sigClass = '';
-  if (ms != null) {
-    if (ms >= 1.5)       { signal = '● COMPRAR';  sigClass = 'signal-comprar'; }
-    else if (ms >= 0.5)  { signal = '● NEUTRAL';  sigClass = 'signal-neutral'; }
-    else                 { signal = '● ESPERAR';  sigClass = 'signal-esperar'; }
-  }
-  const sigEl = document.getElementById('siSignal');
-  if (sigEl) { sigEl.textContent = signal; sigEl.className = 'si-val ' + sigClass; }
-
-  setEl('siSkipo',   fmtClp(sk));
-
-  const exMap = { siBybit: 'bybit_p2p', siOkx: 'okx_p2p', siBinance: 'binance_p2p' };
-  Object.entries(exMap).forEach(([id, col]) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const p = snap[col];
-    if (!p || !sk) { el.textContent = '—'; return; }
-    const sp = (p - sk) / sk * 100;
-    el.textContent = fmtPct(sp);
-    el.className = 'si-val ' + (sp >= 0.5 ? 'val-green' : sp < 0 ? 'val-red' : '');
-  });
-
-  if (snap.usdclp) setEl('siUsdClp', fmtClp(snap.usdclp));
-}
-
-function flashUpdate(id, newVal) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (el.textContent !== newVal) {
-    el.classList.add('updating');
-    setTimeout(() => {
-      el.textContent = newVal;
-      el.classList.remove('updating');
-    }, 200);
-  }
-}
-
-// ── Offers render ─────────────────────────────────────────────────────────
-function renderOffers(data) {
-  S.ofertas = data || {};
-  renderTab();
-}
-
-function switchTab(ex) {
-  S.tab = ex;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.ex === ex));
-  renderTab();
-}
-
-function renderTab() {
-  const list = S.ofertas[S.tab] || [];
-  const c = document.getElementById('offersContent');
-  if (!list.length) {
-    c.innerHTML = `<div class="empty">Sin datos para ${S.tab.toUpperCase()}</div>`;
+  if(!sk || !bp) {
+    set('marginNumber', '—');
     return;
   }
-  const rows = list.map((o, i) => {
-    const ms = (o.metodos || []).slice(0, 3).map(m => `<span class="method-tag">${esc(m)}</span>`).join('');
-    const cp = o.completado_pct ? `<span class="t-green">${o.completado_pct}%</span>` : '<span class="t-muted">—</span>';
-    return `<tr>
-      <td class="t-muted" style="width:22px">${i+1}</td>
-      <td class="t-price">${fmtClp(o.precio)}</td>
-      <td class="t-muted">${fmtClp(o.max)}</td>
-      <td class="t-muted">${fmtUsdt(o.cantidad)}</td>
-      <td>${cp}</td>
-      <td><div class="t-methods">${ms || '<span class="t-muted">—</span>'}</div></td>
-      <td class="t-nick" title="${esc(o.nick||'')}">${esc(o.nick||'—')}</td>
-    </tr>`;
-  }).join('');
-  c.innerHTML = `<table class="offers-table">
-    <thead><tr>
-      <th>#</th><th>Precio</th><th>Máx</th><th>Cantidad</th>
-      <th>Comp%</th><th>Métodos</th><th>Trader</th>
-    </tr></thead>
-    <tbody>${rows}</tbody>
-  </table>`;
+
+  const spread = (bp - sk) / sk * 100;
+  const marginClp = bp - sk;
+
+  // Signal
+  const badge = document.getElementById('signalBadge');
+  const mn = document.getElementById('marginNumber');
+  let sigText, sigClass, sigDesc;
+
+  if(spread >= 1.5) {
+    sigText = '● COMPRAR';
+    sigClass = 'signal-badge comprar';
+    sigDesc = `Ventana activa: spread de <strong>${fmtP(spread)}</strong> sobre precio Skipo. Margen cómodo para operar en <strong>${(be||'').toUpperCase()}</strong>.`;
+  } else if(spread >= 0.5) {
+    sigText = '● NEUTRAL';
+    sigClass = 'signal-badge neutral';
+    sigDesc = `Spread de <strong>${fmtP(spread)}</strong> en <strong>${(be||'').toUpperCase()}</strong>. Operar con volumen moderado.`;
+  } else if(spread >= 0) {
+    sigText = '● ESPERAR';
+    sigClass = 'signal-badge esperar';
+    sigDesc = `Spread ajustado en <strong>${fmtP(spread)}</strong>. Mercado comprimido — esperar apertura de ventana.`;
+  } else {
+    sigText = '● STOP';
+    sigClass = 'signal-badge esperar';
+    sigDesc = `Spread negativo <strong>${fmtP(spread)}</strong>. No operar — precio Skipo sobre exchanges actualmente.`;
+  }
+
+  if(badge) badge.className = sigClass;
+  set('signalText', sigText);
+  const desc = document.getElementById('signalDesc');
+  if(desc) desc.innerHTML = sigDesc;
+
+  // Margin number
+  set('marginNumber', fmtM(marginClp));
+  if(mn) {
+    mn.className = 'margin-number ' + (marginClp > 0 ? 'pos' : marginClp < 0 ? 'neg' : 'neu');
+  }
+  set('marginEx', (be||'—').toUpperCase());
+  set('marginPrice', `$${fmtN(bp)}`);
+
+  // Breakdown
+  set('mb-skipo', `$${fmtN(sk)}`);
+  set('mb-venta', `$${fmtN(bp)}`);
+  const mbp = document.getElementById('mb-pct');
+  if(mbp) {
+    mbp.textContent = fmtP(spread);
+    mbp.className = 'mb-val ' + (spread >= 0 ? 'pos' : 'neg');
+  }
+
+  // Context
+  set('skipoCtx', `$${fmtN(sk)}`);
+  set('bestExCtx', `${(be||'—').toUpperCase()} $${fmtN(bp)}`);
+  set('spreadCtx', fmtP(spread));
+
+  // Compute 24h max from history
+  if(S.hist.length > 0) {
+    const maxSp = Math.max(...S.hist.map(h => h.mejor_spread||0).filter(v=>v!=null));
+    set('maxSpreadCtx', fmtP(maxSp));
+  }
 }
 
-// ── Chart ─────────────────────────────────────────────────────────────────
+// ── Flash update ──────────────────────────────────────────────────
+function flash(id, val) {
+  const el = document.getElementById(id);
+  if(!el || el.textContent === val) return;
+  el.textContent = val;
+  el.classList.remove('flash');
+  void el.offsetWidth;
+  el.classList.add('flash');
+}
+
+// ── Chart ─────────────────────────────────────────────────────────
 function initChart() {
-  const ctx = document.getElementById('spreadChart').getContext('2d');
+  const ctx = document.getElementById('mainChart').getContext('2d');
   S.chart = new Chart(ctx, {
     type: 'line',
-    data: { labels: [], datasets: [] },
+    data: { labels: [], datasets: [
+      { label: 'Bybit', data: [], borderColor: '#00e676', borderWidth: 1.5, pointRadius: 0, tension: .3 },
+      { label: 'OKX',   data: [], borderColor: '#9b9dac', borderWidth: 1, pointRadius: 0, tension: .3 },
+      { label: 'Binance',data: [],borderColor: '#f0b83a', borderWidth: 1, pointRadius: 0, tension: .3 },
+    ]},
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: {
-          labels: { color: '#64748b', font: { family: "'IBM Plex Mono', monospace", size: 10 }, boxWidth: 10 }
-        },
+        legend: { labels: { color: '#484a56', font: { family: "'Space Mono', monospace", size: 9 }, boxWidth: 8, padding: 12 } },
         tooltip: {
-          backgroundColor: '#0f1012',
-          borderColor: '#1e2124',
-          borderWidth: 1,
-          titleColor: '#64748b',
-          bodyColor: '#e2e8f0',
-          bodyFont: { family: "'IBM Plex Mono', monospace", size: 10 },
+          backgroundColor: '#09090f', borderColor: '#111118', borderWidth: 1,
+          titleColor: '#484a56', bodyColor: '#eff0f6',
+          bodyFont: { family: "'Space Mono', monospace", size: 10 },
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.y;
+              if(S.chartMode === 'spread') return ` ${ctx.dataset.label}: ${v>=0?'+':''}${v.toFixed(4)}%`;
+              if(S.chartMode === 'margin') return ` ${ctx.dataset.label}: ${v>=0?'+':''}$${v.toFixed(2)}/USDT`;
+              return ` ${ctx.dataset.label}: $${Math.round(v).toLocaleString('es-CL')}`;
+            }
+          }
         }
       },
       scales: {
-        x: {
-          ticks: { color: '#64748b', font: { size: 9, family: "'IBM Plex Mono', monospace" }, maxTicksLimit: 6, maxRotation: 0 },
-          grid:  { color: '#0d0f10' }
-        },
-        y: {
-          ticks: { color: '#64748b', font: { size: 9, family: "'IBM Plex Mono', monospace" } },
-          grid:  { color: '#0d0f10' }
-        }
+        x: { ticks: { color:'#484a56', font:{size:8,family:"'Space Mono',monospace"}, maxTicksLimit:6, maxRotation:0 }, grid:{color:'rgba(255,255,255,.03)'} },
+        y: { ticks: { color:'#484a56', font:{size:8,family:"'Space Mono',monospace"} }, grid:{color:'rgba(255,255,255,.03)'} }
       }
     }
   });
 }
 
-function switchChartMode(mode) {
+function setChart(mode) {
   S.chartMode = mode;
-  document.getElementById('ct-spread').classList.toggle('active', mode === 'spread');
-  document.getElementById('ct-price').classList.toggle('active', mode === 'price');
-  updateChart(S.history);
+  ['s','p','m'].forEach(k => {
+    const el = document.getElementById('ct-'+k);
+    if(el) el.className = 'ct' + (k === mode[0] ? ' on' : '');
+  });
+  renderChart();
 }
 
-function updateChart(history) {
-  S.history = history || [];
-  if (!S.chart || !history.length) return;
-  const labels = history.map(s => fmtTime(s.timestamp).slice(11, 16));
-  let datasets;
-  if (S.chartMode === 'spread') {
-    datasets = [
-      { label: 'Bybit',   data: history.map(s => s.spread_skipo_bybit),   borderColor: '#c9a84c', backgroundColor: 'transparent', tension: .3, borderWidth: 1.5, pointRadius: 0 },
-      { label: 'OKX',     data: history.map(s => s.spread_skipo_okx),     borderColor: '#64748b', backgroundColor: 'transparent', tension: .3, borderWidth: 1.5, pointRadius: 0 },
-      { label: 'Binance', data: history.map(s => s.spread_skipo_binance), borderColor: '#94a3b8', backgroundColor: 'transparent', tension: .3, borderWidth: 1.5, pointRadius: 0 },
-      { label: 'Bitget',  data: history.map(s => s.spread_skipo_bitget),  borderColor: '#475569', backgroundColor: 'transparent', tension: .3, borderWidth: 1, pointRadius: 0 },
-    ];
-    S.chart.options.scales.y.ticks.callback = v => v != null ? (v >= 0 ? '+' : '') + v.toFixed(2) + '%' : null;
-  } else {
-    datasets = [
-      { label: 'Skipo',   data: history.map(s => s.skipo_compra), borderColor: '#c9a84c', backgroundColor: 'transparent', tension: .3, borderWidth: 2, pointRadius: 0 },
-      { label: 'Bybit',   data: history.map(s => s.bybit_p2p),   borderColor: '#64748b', backgroundColor: 'transparent', tension: .3, borderWidth: 1.5, pointRadius: 0 },
-      { label: 'OKX',     data: history.map(s => s.okx_p2p),     borderColor: '#94a3b8', backgroundColor: 'transparent', tension: .3, borderWidth: 1.5, pointRadius: 0 },
-      { label: 'Binance', data: history.map(s => s.binance_p2p), borderColor: '#475569', backgroundColor: 'transparent', tension: .3, borderWidth: 1.5, pointRadius: 0 },
-    ];
-    S.chart.options.scales.y.ticks.callback = v => v != null ? '$' + Math.round(v).toLocaleString('es-CL') : null;
-  }
-  S.chart.data.labels   = labels;
-  S.chart.data.datasets = datasets;
+function renderChart() {
+  if(!S.chart || !S.hist.length) return;
+  const h = S.hist.slice().reverse();
+  S.chart.data.labels = h.map(r => fmtT(r.timestamp));
+
+  const getVal = (r, ex) => {
+    if(S.chartMode === 'spread') return r['spread_skipo_' + ex];
+    if(S.chartMode === 'margin') {
+      const p = r[ex + '_p2p'], sk = r.skipo_compra;
+      return (p && sk) ? p - sk : null;
+    }
+    return r[ex + '_p2p'];
+  };
+
+  ['bybit','okx','binance'].forEach((ex,i) => {
+    S.chart.data.datasets[i].data = h.map(r => getVal(r, ex));
+  });
   S.chart.update('none');
 }
 
-// ── API calls — backend ───────────────────────────────────────────────────
-async function loadSnapshot() {
+// ── Position (backend) ────────────────────────────────────────────
+async function loadPosition() {
+  if(!BACKEND) return;
   try {
-    const r = await fetch('/api/snapshot');
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    S.hasBackend = true;
-    renderSnapshot(d);
-  } catch(e) {
-    S.hasBackend = false;
-    loadSnapshotDirect();
-  }
-}
+    const r = await fetch(BACKEND + '/api/skipo/inventory');
+    if(!r.ok) return;
+    const pos = await r.json();
+    set('posUsdt', fmtN(pos.total_usdt_recibido) + ' USDT');
+    set('posPP', `$${fmtN(pos.precio_promedio)}`);
+    set('posN', pos.n_completadas + ' ops');
 
-async function loadHistory(limit = 288) {
-  try {
-    const r = await fetch(`/api/history?limit=${limit}`);
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    updateChart(d);
-  } catch(e) {}
-}
-
-async function loadOfertas() {
-  const btn = document.getElementById('ofBtn');
-  btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    if (S.hasBackend) {
-      const r = await fetch('/api/ofertas?top=10');
-      if (!r.ok) throw new Error(r.status);
-      renderOffers(await r.json());
-    } else {
-      await loadOfertasDirect();
-    }
-  } catch(e) {
-    document.getElementById('offersContent').innerHTML = '<div class="empty">Error cargando ofertas</div>';
-  } finally {
-    btn.innerHTML = 'REFRESH';
-  }
-}
-
-async function loadUsdClp() {
-  try {
-    const r = await fetch('/api/usdclp');
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    if (d.valor) {
-      setEl('usdclpVal', fmtClp(d.valor));
-      document.getElementById('usdclpPill').style.display = '';
-    }
-  } catch(e) {}
-}
-
-async function forceRefresh() {
-  await Promise.all([loadSnapshot(), loadHistory(), loadOfertas(), loadUsdClp()]);
-}
-
-// ── Standalone — fetch directo a exchanges desde browser ──────────────────
-async function loadSnapshotDirect() {
-  const [bybit, okx, binance] = await Promise.allSettled([
-    fetchDirectBybit(), fetchDirectOKX(), fetchDirectBinance()
-  ]);
-  const snap = {
-    timestamp:    new Date().toISOString().slice(0,19).replace('T',' '),
-    skipo_compra: null, skipo_venta: null,
-    bybit_p2p:    bybit.status === 'fulfilled'   ? bybit.value   : null,
-    okx_p2p:      okx.status === 'fulfilled'     ? okx.value     : null,
-    binance_p2p:  binance.status === 'fulfilled' ? binance.value : null,
-    bitget_p2p:   null,
-    spread_skipo_bybit: null, spread_skipo_okx: null,
-    spread_skipo_binance: null, spread_skipo_bitget: null,
-    mejor_spread: null, mejor_exchange: null, usdclp: null,
-  };
-  // Mínimo de los tres como referencia de mercado
-  const precios = [snap.bybit_p2p, snap.okx_p2p, snap.binance_p2p].filter(v => v != null);
-  if (precios.length) {
-    const mejor_ex_val = Math.min(...precios);
-    const ex_map = {[snap.bybit_p2p]:'bybit', [snap.okx_p2p]:'okx', [snap.binance_p2p]:'binance'};
-    snap.mejor_exchange = ex_map[mejor_ex_val] || null;
-  }
-  renderSnapshot(snap);
-}
-
-async function fetchDirectBybit() {
-  const r = await fetch('https://api2.bybit.com/fiat/otc/item/online', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json;charset=UTF-8'},
-    body: JSON.stringify({userId:'',tokenId:'USDT',currencyId:'CLP',payment:[],side:'1',size:'5',page:'1',amount:'',authMaker:false,canTrade:false}),
-  });
-  const d = await r.json();
-  if ((d.ret_code ?? d.retCode) !== 0) return null;
-  const items = d.result?.items || [];
-  const prices = items.map(i => parseFloat(i.price)).filter(Boolean);
-  return prices.length ? Math.min(...prices) : null;
-}
-
-async function fetchDirectOKX() {
-  const url = new URL('https://www.okx.com/v3/c2c/tradingOrders/books');
-  Object.entries({baseCurrency:'USDT',quoteCurrency:'CLP',side:'buy',paymentMethod:'ALL',userType:'all',showTrade:'false',showFollow:'false',showAlreadyTraded:'false',isMoreData:'true',limit:'5',page:'1'})
-    .forEach(([k,v]) => url.searchParams.set(k,v));
-  const r = await fetch(url.toString());
-  const d = await r.json();
-  let orders = d.data || {};
-  if (typeof orders === 'object' && !Array.isArray(orders)) orders = orders.buy || orders.sell || [];
-  const prices = (orders||[]).map(o => parseFloat(o.price)).filter(v => v > 500 && v < 2000);
-  return prices.length ? Math.min(...prices) : null;
-}
-
-async function fetchDirectBinance() {
-  const r = await fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json','Origin':'https://p2p.binance.com'},
-    body: JSON.stringify({asset:'USDT',fiat:'CLP',merchantCheck:false,page:1,payTypes:[],publisherType:null,rows:5,tradeType:'SELL'}),
-  });
-  const d = await r.json();
-  if (d.code !== '000000') return null;
-  const prices = (d.data||[]).map(ad => parseFloat(ad?.adv?.price||0)).filter(Boolean);
-  return prices.length ? Math.min(...prices) : null;
-}
-
-async function loadOfertasDirect() {
-  const [bybit, okx, binance] = await Promise.allSettled([
-    fetchDirectOffersBybit(), fetchDirectOffersOKX(), fetchDirectOffersBinance()
-  ]);
-  renderOffers({
-    bybit:   bybit.status === 'fulfilled'   ? bybit.value   : [],
-    okx:     okx.status === 'fulfilled'     ? okx.value     : [],
-    binance: binance.status === 'fulfilled' ? binance.value : [],
-    bitget:  [],
-  });
-}
-
-async function fetchDirectOffersBybit(n=10) {
-  const r = await fetch('https://api2.bybit.com/fiat/otc/item/online', {
-    method:'POST', headers:{'Content-Type':'application/json;charset=UTF-8'},
-    body: JSON.stringify({userId:'',tokenId:'USDT',currencyId:'CLP',payment:[],side:'1',size:String(n),page:'1',amount:'',authMaker:false,canTrade:false}),
-  });
-  const d = await r.json();
-  if ((d.ret_code ?? d.retCode) !== 0) return [];
-  return (d.result?.items||[]).slice(0,n).map(o => ({
-    precio: parseFloat(o.price||0),
-    min: parseFloat(o.minAmount||0),
-    max: parseFloat(o.maxAmount||0),
-    cantidad: parseFloat(o.lastQuantity||0),
-    completado_pct: Math.round(parseFloat(o.recentExecuteRate||o.completedOrderNum||0)),
-    metodos: (o.payments||[]).map(p => String(p)),
-    nick: o.nickName||'',
-  })).filter(o => o.precio > 0);
-}
-
-async function fetchDirectOffersOKX(n=10) {
-  const url = new URL('https://www.okx.com/v3/c2c/tradingOrders/books');
-  Object.entries({baseCurrency:'USDT',quoteCurrency:'CLP',side:'buy',paymentMethod:'ALL',userType:'all',showTrade:'false',showFollow:'false',showAlreadyTraded:'false',isMoreData:'true',limit:String(n),page:'1'})
-    .forEach(([k,v]) => url.searchParams.set(k,v));
-  const r = await fetch(url.toString());
-  const d = await r.json();
-  let orders = d.data||{};
-  if (typeof orders === 'object' && !Array.isArray(orders)) orders = orders.buy||orders.sell||[];
-  return (orders||[]).slice(0,n).map(o => ({
-    precio: parseFloat(o.price||0),
-    min: parseFloat(o.quoteMinAmountPerOrder||0),
-    max: parseFloat(o.quoteMaxAmountPerOrder||0),
-    cantidad: parseFloat(o.availableAmount||o.tradableQuantity||0),
-    completado_pct: Math.round(parseFloat(o.completedRate||0)*100),
-    metodos: (o.paymentMethods||[]).map(p => typeof p === 'object' ? p.paymentType : String(p)),
-    nick: o.nickName||'',
-  })).filter(o => o.precio > 500);
-}
-
-async function fetchDirectOffersBinance(n=10) {
-  const r = await fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
-    method:'POST',
-    headers:{'Content-Type':'application/json','Origin':'https://p2p.binance.com'},
-    body: JSON.stringify({asset:'USDT',fiat:'CLP',merchantCheck:false,page:1,payTypes:[],publisherType:null,rows:n,tradeType:'SELL'}),
-  });
-  const d = await r.json();
-  if (d.code !== '000000') return [];
-  return (d.data||[]).slice(0,n).map(ad => {
-    const adv = ad.adv||{}, anunc = ad.advertiser||{};
-    const comp = anunc.monthOrderCompletion||'0';
-    return {
-      precio: parseFloat(adv.price||0),
-      min: parseFloat(adv.minSingleTransAmount||0),
-      max: parseFloat(adv.maxSingleTransAmount||0),
-      cantidad: parseFloat(adv.tradableQuantity||0),
-      completado_pct: parseInt(comp)||0,
-      metodos: (adv.tradeMethods||[]).map(m => m.tradeMethodName||''),
-      nick: anunc.nickName||'',
-    };
-  }).filter(o => o.precio > 0);
-}
-
-// ── WebSocket ─────────────────────────────────────────────────────────────
-function connectWS() {
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const ws = new WebSocket(`${proto}://${location.host}/ws/live`);
-  S.ws = ws;
-
-  ws.onopen = () => { S.wsRetry = 0; setLive(true); };
-  ws.onmessage = (e) => {
-    try {
-      const msg = JSON.parse(e.data);
-      if (msg.type === 'snapshot') {
-        S.hasBackend = true;
-        renderSnapshot(msg.data);
-        if (S.history.length) {
-          S.history.push(msg.data);
-          if (S.history.length > 1440) S.history.shift();
-          updateChart(S.history);
-        }
+    // P&L vs Bybit
+    if(S.bybit && pos.precio_promedio > 0) {
+      const pnl = S.bybit - pos.precio_promedio;
+      const el = document.getElementById('posPnl');
+      set('posPnl', `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}/USDT`);
+      if(el) el.className = 'sm-val ' + (pnl >= 0 ? 'green' : 'red');
+      // PNL bar
+      const fill = document.getElementById('pnlFill');
+      if(fill) {
+        const pct = Math.min(Math.abs(pnl) / 30 * 100, 100);
+        fill.style.width = pct + '%';
+        fill.style.background = pnl >= 0 ? 'var(--green)' : 'var(--red)';
       }
-    } catch(err) {}
-  };
-  ws.onerror  = () => setLive(false);
-  ws.onclose  = () => {
-    setLive(false);
-    S.wsRetry++;
-    setTimeout(connectWS, Math.min(5000 * S.wsRetry, 60000));
-  };
+    }
+  } catch(e) {}
 }
 
-function setLive(on) {
-  const dot = document.getElementById('liveDot');
-  dot.className = 'live-dot' + (on ? '' : ' offline');
-  setEl('liveLabel', on ? 'LIVE' : 'OFFLINE');
+// ── Pagos today (backend) ─────────────────────────────────────────
+async function loadPagos() {
+  if(!BACKEND) return;
+  try {
+    const snap = await fetch(BACKEND + '/api/snapshot').then(r=>r.json());
+    // For now just show placeholder — pagos endpoint TBD
+  } catch(e) {}
 }
 
-// Polling fallback cada 5 min si WS está caído
-setInterval(() => {
-  if (!S.ws || S.ws.readyState !== WebSocket.OPEN) loadSnapshot();
-}, 5 * 60 * 1000);
+// ── Skipo Intel (backend) ─────────────────────────────────────────
+async function loadSkipoIntel() {
+  if(!BACKEND) return;
+  try {
+    const r = await fetch(BACKEND + '/api/skipo/overview');
+    if(!r.ok) return;
+    const data = await r.json();
+    const ex = data.ejecucion_hoy || {};
+    if(ex.avg_slippage != null) set('skipoSlip', `${(ex.avg_slippage||0).toFixed(3)}%`);
+  } catch(e) {}
+}
 
-// ── Init ──────────────────────────────────────────────────────────────────
+// ── Offers ────────────────────────────────────────────────────────
+const otab_state = { bybit: [], okx: [], binance: [] };
+
+function switchOTab(ex) {
+  S.otab = ex;
+  document.querySelectorAll('.otab').forEach(t => t.classList.toggle('on', t.dataset.ex === ex));
+  renderOffers();
+}
+
+function renderOffers() {
+  const data = otab_state[S.otab] || [];
+  const body = document.getElementById('offersBody');
+  if(!body) return;
+  if(!data.length) {
+    body.innerHTML = '<div class="offers-empty">Sin datos — haz REFRESH</div>';
+    return;
+  }
+  const sk = S.skipo;
+  let html = `<table class="offers-table">
+    <thead><tr>
+      <th>Precio CLP/USDT</th>
+      <th>Mín (CLP)</th>
+      <th>Máx (CLP)</th>
+      <th>Spread vs Skipo</th>
+      <th>Pago</th>
+    </tr></thead><tbody>`;
+  data.slice(0,8).forEach(o => {
+    const sp = sk ? (o.price - sk) / sk * 100 : null;
+    const spClass = sp == null ? '' : (sp >= 0.5 ? 'green' : sp < 0 ? 'red' : '');
+    const spStr = sp == null ? '—' : fmtP(sp);
+    html += `<tr>
+      <td>$${fmtN(o.price)}</td>
+      <td>${fmtN(o.minAmount)}</td>
+      <td>${fmtN(o.maxAmount)}</td>
+      <td class="${spClass}">${spStr}</td>
+      <td>${(o.payments||[]).slice(0,2).join(', ') || '—'}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  body.innerHTML = html;
+}
+
+// ── Fetch direct from exchanges ───────────────────────────────────
+async function fetchBybit() {
+  try {
+    const r = await fetch('https://api2.bybit.com/fiat/otc/item/online', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({tokenId:'USDT',currencyId:'CLP',payment:[],side:'1',size:'10',page:'1',amount:'',authMaker:false,canTrade:false})
+    });
+    const d = await r.json();
+    const items = (d.result?.items || []).map(i => ({
+      price: parseFloat(i.price),
+      minAmount: parseFloat(i.minAmount),
+      maxAmount: parseFloat(i.maxAmount),
+      payments: i.payments?.map(p => p.paymentConfigVo?.paymentName || p.paymentType) || []
+    }));
+    if(items.length) {
+      const top = items[0].price;
+      S.bybit = top;
+      otab_state.bybit = items;
+      flash('p-bybit', fmtN(top));
+      renderPrices();
+      renderHero();
+      if(S.otab === 'bybit') renderOffers();
+    }
+  } catch(e) {}
+}
+
+async function fetchOKX() {
+  try {
+    const r = await fetch('https://www.okx.com/v3/c2c/tradingOrders/books?quoteCurrency=CLP&baseCurrency=USDT&side=sell&paymentMethod=all&userType=all&showTrade=false&showFollow=false&showAlreadyTraded=false&isAbleFilter=false');
+    const d = await r.json();
+    const items = (d.data?.sell || []).slice(0,10).map(o => ({
+      price: parseFloat(o.price),
+      minAmount: parseFloat(o.quoteMinAmountPerOrder),
+      maxAmount: parseFloat(o.quoteMaxAmountPerOrder),
+      payments: o.paymentMethods?.map(p => typeof p==='string' ? p : p.paymentMethod) || []
+    }));
+    if(items.length) {
+      S.okx = items[0].price;
+      otab_state.okx = items;
+      flash('p-okx', fmtN(S.okx));
+      renderPrices();
+      renderHero();
+      if(S.otab === 'okx') renderOffers();
+    }
+  } catch(e) {}
+}
+
+async function fetchBinance() {
+  try {
+    const r = await fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({fiat:'CLP',page:1,rows:10,tradeType:'SELL',asset:'USDT',countries:[],proMerchantAds:false,shieldMerchantAds:false,filterType:'all',periods:[],additionalKycVerifyFilter:0,publisherType:null,payTypes:[],classifies:['mass','profession','fiat_trade']})
+    });
+    const d = await r.json();
+    const items = (d.data || []).map(o => ({
+      price: parseFloat(o.adv?.price),
+      minAmount: parseFloat(o.adv?.minSingleTransAmount),
+      maxAmount: parseFloat(o.adv?.dynamicMaxSingleTransAmount || o.adv?.maxSingleTransAmount),
+      payments: o.adv?.tradeMethods?.map(m => m.tradeMethodShortName || m.tradeMethodName) || []
+    }));
+    if(items.length) {
+      S.binance = items[0].price;
+      otab_state.binance = items;
+      flash('p-binance', fmtN(S.binance));
+      renderPrices();
+      renderHero();
+      if(S.otab === 'binance') renderOffers();
+    }
+  } catch(e) {}
+}
+
+async function fetchUsdClp() {
+  try {
+    const r = await fetch('https://mindicador.cl/api/dolar');
+    const d = await r.json();
+    const v = d.serie?.[0]?.valor;
+    if(v) { S.usdclp = v; set('usdclpTop', fmtN(v)); }
+  } catch(e) {}
+}
+
+async function fetchOffers() {
+  const btn = document.querySelector('.refresh-btn');
+  if(btn) btn.textContent = '↻ ...';
+  await Promise.all([fetchBybit(), fetchOKX(), fetchBinance()]);
+  renderOffers();
+  if(btn) btn.textContent = '↻ REFRESH';
+}
+
+// ── Backend polling ───────────────────────────────────────────────
+async function pollBackend() {
+  if(!BACKEND) return;
+  try {
+    const r = await fetch(BACKEND + '/api/snapshot', { signal: AbortSignal.timeout(5000) });
+    if(!r.ok) return;
+    const snap = await r.json();
+    renderSnap(snap);
+    setLive(true, 'SR-71 LIVE');
+  } catch(e) { setLive(false, 'SIN BACKEND'); }
+}
+
+async function loadHistory() {
+  let url = BACKEND ? BACKEND + '/api/history?limit=288' : null;
+  if(!url) return;
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if(!r.ok) return;
+    S.hist = await r.json();
+    renderChart();
+    // max spread from history
+    const maxSp = Math.max(...S.hist.map(h=>h.mejor_spread||0).filter(v=>v!=null));
+    set('maxSpreadCtx', fmtP(maxSp));
+  } catch(e) {}
+}
+
+// ── WebSocket ─────────────────────────────────────────────────────
+function initWS() {
+  if(!BACKEND) return;
+  const wsUrl = BACKEND.replace('http', 'ws') + '/ws/live';
+  try {
+    const ws = new WebSocket(wsUrl);
+    S.ws = ws;
+    ws.onmessage = e => {
+      const msg = JSON.parse(e.data);
+      if(msg.type === 'snapshot') {
+        renderSnap(msg.data);
+        setLive(true, 'SR-71 LIVE');
+      }
+    };
+    ws.onclose = () => setTimeout(initWS, 5000);
+    ws.onerror = () => ws.close();
+  } catch(e) {}
+}
+
+// ── Init ──────────────────────────────────────────────────────────
 (async function init() {
   initChart();
-  await Promise.all([loadSnapshot(), loadHistory(), loadOfertas(), loadUsdClp()]);
-  connectWS();
-  setInterval(loadOfertas, 2 * 60 * 1000);
+  set('buildInfo', `SR-71 v2 — ${new Date().toLocaleDateString('es-CL')}`);
+
+  // Fetch exchange prices immediately (no backend needed)
+  setLive(false, 'CONECTANDO');
+  fetchBybit();
+  fetchOKX();
+  fetchBinance();
+  fetchUsdClp();
+  fetchOffers();
+
+  // Try backend
+  if(BACKEND) {
+    await pollBackend();
+    await loadHistory();
+    await loadPosition();
+    await loadSkipoIntel();
+    initWS();
+  } else {
+    setLive(false, 'SIN SR-71 LOCAL');
+  }
+
+  // Refresh cycles
+  setInterval(fetchBybit,   60_000);
+  setInterval(fetchOKX,     60_000);
+  setInterval(fetchBinance, 60_000);
+  setInterval(fetchUsdClp, 300_000);
+  if(BACKEND) {
+    setInterval(pollBackend,  30_000);
+    setInterval(loadHistory,  300_000);
+    setInterval(loadPosition, 300_000);
+  }
 })();
 </script>
 </body>
