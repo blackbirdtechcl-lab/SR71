@@ -281,6 +281,19 @@
       line-height: 1.45;
     }
     .backend-banner.visible { display: block; }
+    .integrations-strip {
+      display: none;
+      padding: 8px 28px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: var(--ink2);
+      background: rgba(46, 229, 157, 0.06);
+      border-bottom: 1px solid rgba(46, 229, 157, 0.15);
+    }
+    .integrations-strip.visible { display: block; }
+    .integrations-strip .ok { color: var(--green2); }
+    .integrations-strip .no { color: var(--ink3); }
     .topbar-right { display: flex; align-items: center; gap: 24px; }
     .topbar-usdclp {
       font-family: 'JetBrains Mono', monospace;
@@ -953,6 +966,7 @@
   </header>
 
   <div class="backend-banner" id="backend-banner" role="status" aria-live="polite"></div>
+  <div class="integrations-strip" id="integrations-strip" hidden></div>
 
   <!-- Main -->
   <div class="main-content">
@@ -1354,6 +1368,13 @@ async function loadSr71Api() {
         SR71_API = String(u).replace(/\/+$/, '');
         return;
       }
+    }
+  } catch (e) {}
+  /* Mismo origen = túnel ngrok / Cloudflare: el FastAPI devuelve la base en /config.json; fallback explícito */
+  try {
+    const h = window.location.hostname || '';
+    if (!SR71_API && /ngrok|loca\.lt|trycloudflare|serveo/i.test(h)) {
+      SR71_API = window.location.origin.replace(/\/+$/, '');
     }
   } catch (e) {}
 }
@@ -2345,6 +2366,27 @@ function renderTrace(tl) {
   }
 }
 
+function renderIntegrationsStrip(st) {
+  const el = document.getElementById('integrations-strip');
+  if (!el) return;
+  if (!st || !st.integrations) {
+    el.hidden = true;
+    el.classList.remove('visible');
+    return;
+  }
+  const I = st.integrations;
+  const tag = function (label, on) {
+    return '<span class="' + (on ? 'ok' : 'no') + '">' + label + (on ? ' ●' : ' ○') + '</span>';
+  };
+  el.innerHTML =
+    'INTEGRACIONES .env — ' +
+    tag('Skipo', !!I.skipo) + ' · ' +
+    tag('Banco API', !!I.banco_chile_api) + ' · ' +
+    tag('Bybit', !!I.bybit_read);
+  el.hidden = false;
+  el.classList.add('visible');
+}
+
 // ══════════════════════════════════════════════════════════════
 // MAIN FETCH CYCLE
 // ══════════════════════════════════════════════════════════════
@@ -2355,6 +2397,7 @@ async function fetchAll() {
     fetchOKX(),
     fetchBinance(),
     fetchUsdClp(),
+    _apiGet('/api/status'),
     _apiGet('/api/snapshot'),
     _apiGet('/api/banco/movimientos'),
     _apiGet('/api/banco/resumen'),
@@ -2367,8 +2410,10 @@ async function fetchAll() {
     _apiGet('/api/banco/config'),
   ]);
 
-  const [bybit, okx, binance, usdclp, snap, movs, resumen, inventory, skipoCur, history, detalle, timeline, skipoPend, bancoCfg]
+  const [bybit, okx, binance, usdclp, apiStatus, snap, movs, resumen, inventory, skipoCur, history, detalle, timeline, skipoPend, bancoCfg]
     = results.map(r => r.status === 'fulfilled' ? r.value : null);
+
+  renderIntegrationsStrip(apiStatus);
 
   // Merge exchange prices: direct fetch takes priority over snapshot cache
   const bybitP   = bybit   || snap?.bybit_p2p;
