@@ -352,6 +352,75 @@
     }
     .card-sub { font-family: 'Inter', sans-serif; font-size: 10px; color: var(--ink3); }
 
+    /* Posición Skipo */
+    .posicion-section { margin-bottom: 32px; display: none; }
+    .posicion-section.visible { display: block; }
+    .posicion-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 24px;
+      border: 1px solid var(--border);
+      margin-top: 16px;
+      overflow: hidden;
+    }
+    .posicion-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px 28px;
+      border-right: 1px solid var(--border);
+      background: var(--bg1);
+      min-width: 200px;
+    }
+    .semaforo {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--ink3);
+      flex-shrink: 0;
+    }
+    .semaforo.verde   { background: var(--green2); box-shadow: 0 0 8px rgba(74,140,98,0.4); }
+    .semaforo.amarillo{ background: var(--amber2); box-shadow: 0 0 8px rgba(201,160,0,0.4); }
+    .semaforo.rojo    { background: var(--red2);   box-shadow: 0 0 8px rgba(179,64,64,0.4); }
+    .posicion-prom-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px; font-weight: 600; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--ink3); text-align: center;
+    }
+    .posicion-prom {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 200; font-size: 44px; color: var(--bronze); line-height: 1;
+    }
+    .posicion-be {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px; color: var(--ink3);
+    }
+    .posicion-stats {
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .pos-stat-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 9px 0; border-bottom: 1px solid var(--border);
+    }
+    .pos-stat-row:last-child { border-bottom: none; }
+    .pos-stat-label { font-family: 'Inter', sans-serif; font-size: 11px; color: var(--ink3); }
+    .pos-stat-val   { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: var(--ink); }
+    .pos-stat-val.verde  { color: var(--green2); }
+    .pos-stat-val.rojo   { color: var(--red2); }
+    .pos-stat-val.amber  { color: var(--amber); }
+    .pos-bar-wrap {
+      height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden;
+      margin: 4px 0 12px;
+    }
+    .pos-bar-fill {
+      height: 100%; background: var(--green2); border-radius: 3px;
+      transition: width .5s ease;
+    }
+
     /* Banco Chile */
     .banco-section { margin-bottom: 32px; }
     .banco-header {
@@ -523,6 +592,44 @@
           <div class="card-exchange">Binance P2P</div>
           <div class="card-price" id="price-binance">&#8212;</div>
           <div class="card-spread" id="spread-binance">&#8212;</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Posición Skipo Capacity -->
+    <section class="posicion-section" id="posicion-section">
+      <p class="section-label">Posici&#243;n Skipo Capacity</p>
+      <div class="posicion-grid">
+        <div class="posicion-main">
+          <div class="semaforo" id="semaforo-dot"></div>
+          <span class="posicion-prom-label">Precio prom. compra</span>
+          <span class="posicion-prom" id="pos-prom-big">$&#8212;</span>
+          <span class="posicion-be" id="pos-be-label">break-even &#8212;</span>
+        </div>
+        <div class="posicion-stats">
+          <div class="pos-stat-row">
+            <span class="pos-stat-label">Spread neto real</span>
+            <span class="pos-stat-val" id="pos-spread-neto">&#8212;</span>
+          </div>
+          <div class="pos-stat-row">
+            <span class="pos-stat-label">USDT disponible / congelado</span>
+            <span class="pos-stat-val" id="pos-usdt-ratio">&#8212;</span>
+          </div>
+          <div class="pos-bar-wrap">
+            <div class="pos-bar-fill" id="pos-bar-fill" style="width:0%"></div>
+          </div>
+          <div class="pos-stat-row">
+            <span class="pos-stat-label">P&amp;L hoy (realizado)</span>
+            <span class="pos-stat-val" id="pos-pnl-hoy">&#8212;</span>
+          </div>
+          <div class="pos-stat-row">
+            <span class="pos-stat-label">P&amp;L latente (en mano)</span>
+            <span class="pos-stat-val" id="pos-pnl-latente-skipo">&#8212;</span>
+          </div>
+          <div class="pos-stat-row">
+            <span class="pos-stat-label">Posiciones activas</span>
+            <span class="pos-stat-val" id="pos-n-activas">&#8212;</span>
+          </div>
         </div>
       </div>
     </section>
@@ -958,6 +1065,55 @@ function renderPosition(inv) {
   }
 }
 
+function renderSkipo(ps) {
+  const sec = document.getElementById('posicion-section');
+  if (!ps || ps.precio_promedio == null) { sec.classList.remove('visible'); return; }
+
+  // Mostrar la sección siempre que haya datos de precio_promedio
+  sec.classList.add('visible');
+
+  // Semáforo
+  const dot = document.getElementById('semaforo-dot');
+  const sem = (ps.semaforo || '').toLowerCase();
+  dot.className = 'semaforo' + (sem === 'verde' ? ' verde' : sem === 'amarillo' ? ' amarillo' : sem === 'rojo' ? ' rojo' : '');
+
+  // Precio promedio + break-even
+  document.getElementById('pos-prom-big').textContent  = '$' + _fmt(ps.precio_promedio);
+  document.getElementById('pos-be-label').textContent  = 'break-even $' + _fmt(ps.break_even);
+
+  // Spread neto
+  const sn = ps.spread_neto;
+  const snEl = document.getElementById('pos-spread-neto');
+  if (sn != null) {
+    snEl.textContent = (sn >= 0 ? '+' : '') + _fmtD(sn, 2) + '%';
+    snEl.className   = 'pos-stat-val' + (sn >= 1.5 ? ' verde' : sn >= 0.3 ? '' : sn >= 0 ? ' amber' : ' rojo');
+  } else { snEl.textContent = '\u2014'; snEl.className = 'pos-stat-val'; }
+
+  // USDT disponible / congelado
+  const disp  = ps.usdt_disponible || 0;
+  const total = ps.usdt_congelado  || 0;
+  document.getElementById('pos-usdt-ratio').textContent = _fmtD(disp, 2) + ' / ' + _fmtD(total, 2) + ' USDT';
+
+  // Barra de progreso (% vendido)
+  const pct = ps.pct_vendido || 0;
+  document.getElementById('pos-bar-fill').style.width = Math.min(pct, 100) + '%';
+
+  // P&L
+  const pnlEl = document.getElementById('pos-pnl-hoy');
+  if (ps.ganancia_clp) {
+    pnlEl.textContent = (ps.ganancia_clp >= 0 ? '+' : '') + '$' + _fmt(ps.ganancia_clp) + ' CLP';
+    pnlEl.className   = 'pos-stat-val ' + (ps.ganancia_clp >= 0 ? 'verde' : 'rojo');
+  } else { pnlEl.textContent = '\u2014'; pnlEl.className = 'pos-stat-val'; }
+
+  const latEl = document.getElementById('pos-pnl-latente-skipo');
+  if (ps.ganancia_latente_clp != null && ps.ganancia_latente_clp !== 0) {
+    latEl.textContent = (ps.ganancia_latente_clp >= 0 ? '+' : '') + '$' + _fmt(ps.ganancia_latente_clp) + ' CLP';
+    latEl.className   = 'pos-stat-val ' + (ps.ganancia_latente_clp >= 0 ? 'verde' : 'rojo');
+  } else { latEl.textContent = '\u2014'; latEl.className = 'pos-stat-val'; }
+
+  document.getElementById('pos-n-activas').textContent = String(ps.n_posiciones_activas || 0);
+}
+
 let _chartInst = null;
 
 function renderChart(history) {
@@ -1079,6 +1235,7 @@ async function fetchAll() {
 
   renderPrices(skipoP, bybitP, okxP, binanceP);
   renderHero(bestSpread, skipoP, bestEx);
+  renderSkipo(snap?.posicion_skipo || null);
   renderBanco(movs, resumen);
   renderPosition(inventory);
   if (history) renderChart(history);
