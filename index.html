@@ -1357,6 +1357,10 @@ async function fetchUsdClp() {
 
 const _fmt  = v => v != null ? (+v).toLocaleString('es-CL', {minimumFractionDigits:2, maximumFractionDigits:2}) : '\u2014';
 const _fmtD = (v, d=2) => v != null ? (+v).toFixed(d) : '\u2014';
+/** CLP por USDT (P2P): siempre exactamente 2 decimales — Skipo, exchanges, spreads. */
+const _fmtClp2 = v => (v != null && !Number.isNaN(+v))
+  ? Number(v).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  : '\u2014';
 
 // ══════════════════════════════════════════════════════════════
 // RENDER FUNCTIONS
@@ -1376,7 +1380,7 @@ function renderPrices(skipo, bybit, okx, binance) {
   }
 
   // Skipo card
-  document.getElementById('price-skipo').textContent = skipo ? '$' + _fmt(skipo) : '\u2014';
+  document.getElementById('price-skipo').textContent = skipo ? '$' + _fmtClp2(skipo) : '\u2014';
 
   // Exchange cards
   ['bybit','okx','binance'].forEach(ex => {
@@ -1395,7 +1399,7 @@ function renderPrices(skipo, bybit, okx, binance) {
       return;
     }
 
-    priceEl.textContent = '$' + _fmt(p);
+    priceEl.textContent = '$' + _fmtClp2(p);
 
     if (skipo) {
       const sp = (p - skipo) / skipo * 100;
@@ -1434,7 +1438,7 @@ function renderHero(spread, skipo, bestEx) {
 
   if (skipo) {
     const clpXusdt = skipo * spread / 100;
-    equivEl.textContent = '= $' + _fmt(clpXusdt) + ' por USDT';
+    equivEl.textContent = '= $' + _fmtClp2(clpXusdt) + ' por USDT';
   }
 
   let sig, cls;
@@ -1509,8 +1513,8 @@ function renderSkipo(ps) {
   dot.className = 'semaforo' + (sem === 'verde' ? ' verde' : sem === 'amarillo' ? ' amarillo' : sem === 'rojo' ? ' rojo' : '');
 
   // Precio promedio + break-even
-  document.getElementById('pos-prom-big').textContent  = '$' + _fmt(ps.precio_promedio);
-  document.getElementById('pos-be-label').textContent  = 'break-even $' + _fmt(ps.break_even);
+  document.getElementById('pos-prom-big').textContent  = '$' + _fmtClp2(ps.precio_promedio);
+  document.getElementById('pos-be-label').textContent  = 'break-even $' + _fmtClp2(ps.break_even);
 
   // Spread neto
   const sn = ps.spread_neto;
@@ -1556,11 +1560,11 @@ function _buildTickerHTML() {
   const D = _tickerData;
   const sep = '<span class="ticker-sep">&middot;</span>';
   const items = [
-    'USD/CLP <b>' + (D.usdclp ? '$' + _fmt(D.usdclp) : '\u2014') + '</b>',
-    'SKIPO compra <b>' + (D.skipo ? '$' + _fmt(D.skipo) : '\u2014') + '</b>',
-    'BYBIT <b>' + (D.bybit ? '$' + _fmt(D.bybit) : '\u2014') + '</b>',
-    'OKX <b>' + (D.okx ? '$' + _fmt(D.okx) : '\u2014') + '</b>',
-    'BINANCE <b>' + (D.binance ? '$' + _fmt(D.binance) : '\u2014') + '</b>',
+    'USD/CLP <b>' + (D.usdclp ? '$' + _fmtClp2(D.usdclp) : '\u2014') + '</b>',
+    'SKIPO compra <b>' + (D.skipo ? '$' + _fmtClp2(D.skipo) : '\u2014') + '</b>',
+    'BYBIT <b>' + (D.bybit ? '$' + _fmtClp2(D.bybit) : '\u2014') + '</b>',
+    'OKX <b>' + (D.okx ? '$' + _fmtClp2(D.okx) : '\u2014') + '</b>',
+    'BINANCE <b>' + (D.binance ? '$' + _fmtClp2(D.binance) : '\u2014') + '</b>',
     'SPREAD <b>' + (D.spread != null ? _fmtD(D.spread, 2) + '%' : '\u2014') + '</b>',
     'PAGOS HOY <b>' + (D.pagosHoy != null ? D.pagosHoy : '\u2014') + '</b>',
     'USDT <b>' + (D.usdt != null ? _fmtD(D.usdt, 1) : '\u2014') + '</b>',
@@ -1746,8 +1750,8 @@ function renderDetalle(positions) {
   }
   tbody.innerHTML = positions.map(p => {
     const fecha  = (p.timestamp || p.fecha || '').slice(0, 16).replace('T', ' ');
-    const precio = '$' + _fmt(p.precio);
-    const be     = '$' + _fmt(p.break_even);
+    const precio = '$' + _fmtClp2(p.precio);
+    const be     = '$' + _fmtClp2(p.break_even);
     const total  = _fmtD(p.usdt_comprado, 2) + ' USDT';
     const disp   = _fmtD(p.usdt_disponible, 2) + ' USDT';
     const pct    = (p.pct_vendido || 0).toFixed(1);
@@ -1855,13 +1859,13 @@ function renderSkipoPendientes(data, bancoCfg) {
 
   if (ppmEl) {
     ppmEl.textContent = m.precio_promedio_ponderado_clp != null
-      ? '$' + _fmt(m.precio_promedio_ponderado_clp)
+      ? '$' + _fmtClp2(m.precio_promedio_ponderado_clp)
       : (tot.n_ordenes ? '—' : 'N/A');
     ppmEl.className = 'skipo-met-val accent';
   }
   if (tickEl) {
     tickEl.textContent = m.precio_ticker_skipo_compra != null
-      ? '$' + _fmt(m.precio_ticker_skipo_compra)
+      ? '$' + _fmtClp2(m.precio_ticker_skipo_compra)
       : '—';
   }
   if (delEl) {
@@ -2046,7 +2050,7 @@ async function fetchAll() {
   if (pvInput && !pvInput.value && bybitP) pvInput.value = bybitP;
 
   // Topbar
-  if (usdclpV) document.getElementById('topbar-usdclp').textContent = 'USD/CLP $' + _fmt(usdclpV);
+  if (usdclpV) document.getElementById('topbar-usdclp').textContent = 'USD/CLP $' + _fmtClp2(usdclpV);
   document.getElementById('status-dot').className = snap ? 'status-dot' : 'status-dot offline';
 
   const banner = document.getElementById('backend-banner');
