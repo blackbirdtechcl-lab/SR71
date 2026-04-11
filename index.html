@@ -208,6 +208,19 @@
       background: var(--green2);
     }
     .status-dot.offline { background: var(--red2); }
+
+    .backend-banner {
+      display: none;
+      padding: 8px 20px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      color: var(--ink);
+      background: #f5e6c8;
+      border-bottom: 1px solid var(--amber2);
+      line-height: 1.45;
+    }
+    .backend-banner.visible { display: block; }
     .topbar-right { display: flex; align-items: center; gap: 24px; }
     .topbar-usdclp {
       font-family: 'Space Mono', monospace;
@@ -494,6 +507,44 @@
     .ops-day-row    { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink2); }
     .ops-day-row span:last-child { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--ink); }
 
+    /* Trazabilidad P2P (email ↔ pagos ↔ banco API) */
+    .trace-section { margin-bottom: 32px; }
+    .trace-header {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .trace-meta {
+      font-family: 'Space Mono', monospace; font-size: 10px; color: var(--ink3); letter-spacing: .04em;
+      max-width: 52ch; text-align: right; line-height: 1.4;
+    }
+    .trace-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); table-layout: fixed; }
+    .trace-table th {
+      font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--ink3); padding: 10px 10px; text-align: left; background: var(--bg1); border-bottom: 1px solid var(--border);
+    }
+    .trace-table td {
+      font-family: 'Space Mono', monospace; font-size: 10px; color: var(--ink);
+      padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top;
+      word-break: break-word;
+    }
+    .trace-table tr:last-child td { border-bottom: none; }
+    .trace-table tr:hover td { background: var(--bg1); }
+    .trace-row-pipe td:first-child { border-left: 3px solid var(--border); }
+    .trace-row-pipe.pipe-ok td:first-child { border-left-color: var(--green2); }
+    .trace-row-pipe.pipe-warn td:first-child { border-left-color: var(--amber2); }
+    .trace-row-pipe.pipe-muted td:first-child { border-left-color: var(--ink3); }
+    .trace-badge {
+      display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: .06em;
+      padding: 3px 8px; border-radius: 2px; text-transform: uppercase;
+    }
+    .trace-badge.ok { background: rgba(45, 90, 61, 0.15); color: var(--green); }
+    .trace-badge.mid { background: rgba(201, 160, 0, 0.15); color: var(--amber); }
+    .trace-badge.lo { background: var(--bg2); color: var(--ink3); }
+    .trace-mini { font-size: 9px; color: var(--ink3); display: block; margin-top: 2px; line-height: 1.3; }
+    .trace-chain { font-size: 10px; color: var(--ink2); line-height: 1.5; }
+    .trace-empty { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink3); padding: 20px 14px; text-align: center; }
+    .trace-h3 { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink3); margin: 20px 0 8px; letter-spacing: .06em; }
+
     /* Banco Chile */
     .banco-section { margin-bottom: 32px; }
     .banco-header {
@@ -661,6 +712,8 @@
     </div>
   </header>
 
+  <div class="backend-banner" id="backend-banner" role="status" aria-live="polite"></div>
+
   <!-- Main -->
   <div class="main-content">
 
@@ -808,6 +861,48 @@
       </div>
     </section>
 
+    <!-- Trazabilidad: exchange email → conciliador → Banco Chile API -->
+    <section class="trace-section" id="trace-section">
+      <div class="trace-header">
+        <p class="section-label" style="margin-bottom:0">Trazabilidad P2P &#8212; correo ↔ pagos ↔ banco</p>
+        <span class="trace-meta" id="trace-meta">Sin datos</span>
+      </div>
+      <p style="font-size:11px;color:var(--ink3);max-width:900px;line-height:1.5;margin-bottom:12px">
+        Cruce en vivo entre notificaciones de exchanges (Gmail scrape, cuenta configurada en SR-71),
+        registros del conciliador (Gmail bancario + API Banco Chile) y ABONOS de la API del banco.
+        Asigna <code style="font-size:10px">orden_id</code> en pagos para mejorar el match automático.
+      </p>
+      <table class="trace-table">
+        <thead>
+          <tr>
+            <th style="width:14%">Pipeline</th>
+            <th style="width:12%">Exchange</th>
+            <th style="width:18%">Orden / CLP</th>
+            <th style="width:22%">Pago</th>
+            <th style="width:22%">Banco API</th>
+            <th style="width:12%">Match</th>
+          </tr>
+        </thead>
+        <tbody id="trace-tbody">
+          <tr><td colspan="6" class="trace-empty">Cargando trazabilidad...</td></tr>
+        </tbody>
+      </table>
+      <p class="trace-h3">Pagos sin email de exchange reciente (revisar)</p>
+      <table class="trace-table">
+        <thead>
+          <tr>
+            <th style="width:18%">Origen</th>
+            <th style="width:20%">Monto / estado</th>
+            <th style="width:30%">Banco API</th>
+            <th style="width:12%">Match</th>
+          </tr>
+        </thead>
+        <tbody id="trace-orphan-tbody">
+          <tr><td colspan="4" class="trace-empty">—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
     <!-- Skipo detalle posiciones -->
     <section class="detalle-section" id="detalle-section">
       <div class="detalle-header">
@@ -906,8 +1001,17 @@ const SUPERADMIN       = 'blackbirdtech.cl@gmail.com';
 const TOKEN_KEY        = 'sr71_auth_v1';
 const TOKEN_TTL        = 8 * 60 * 60 * 1000; // 8 horas ms
 
-// Backend SR-71 — expuesto via ngrok (tunnel.sh)
-const SR71_API = "https://ernest-unparodied-unendurably.ngrok-free.dev";
+// Backend SR-71 (GitHub Pages no puede hablar con localhost: hay que tunelar).
+// Prioridad: ?api=URL | localStorage sr71_api_base | default (ngrok estático en tunnel.sh)
+const SR71_API = (function resolveSr71Api() {
+  try {
+    const q = new URLSearchParams(window.location.search).get('api');
+    if (q && /^https?:\/\//i.test(q)) return q.replace(/\/+$/, '');
+    const ls = localStorage.getItem('sr71_api_base');
+    if (ls && /^https?:\/\//i.test(ls)) return ls.replace(/\/+$/, '');
+  } catch (e) {}
+  return 'https://ernest-unparodied-unendurably.ngrok-free.dev';
+})();
 
 // ══════════════════════════════════════════════════════════════
 // GOOGLE AUTH
@@ -1082,24 +1186,38 @@ async function fetchBybit() {
   try {
     const r = await fetch('https://api2.bybit.com/fiat/otc/item/online', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tokenId:'USDT', currencyId:'CLP', payment:['375'], side:'1', size:'5', page:'1', amount:'' }),
+      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
+      body: JSON.stringify({
+        userId: '', tokenId: 'USDT', currencyId: 'CLP', payment: [], side: '1',
+        size: '5', page: '1', amount: '', authMaker: false, canTrade: false,
+      }),
       signal: AbortSignal.timeout(9000),
     });
     const d = await r.json();
+    if ((d.ret_code ?? d.retCode) !== 0) return null;
     const items = d?.result?.items || [];
-    return items.length ? parseFloat(items[0].price) : null;
+    const prices = items.map(i => parseFloat(i.price)).filter(v => v > 0);
+    return prices.length ? Math.min(...prices) : null;
   } catch { return null; }
 }
 
 async function fetchOKX() {
   try {
-    const r = await fetch('https://www.okx.com/v3/c2c/tradingOrders/books?quoteCurrency=CLP&baseCurrency=USDT&side=sell&paymentMethod=all&userType=all&showTrade=false&showFollow=false&showAlreadyTraded=false&isAbleFilter=false', {
-      signal: AbortSignal.timeout(9000),
-    });
+    const url = new URL('https://www.okx.com/v3/c2c/tradingOrders/books');
+    [
+      ['baseCurrency', 'USDT'], ['quoteCurrency', 'CLP'], ['side', 'buy'],
+      ['paymentMethod', 'ALL'], ['userType', 'all'], ['showTrade', 'false'],
+      ['showFollow', 'false'], ['showAlreadyTraded', 'false'], ['isMoreData', 'true'],
+      ['limit', '5'], ['page', '1'],
+    ].forEach(([k, v]) => url.searchParams.set(k, v));
+    const r = await fetch(url.toString(), { signal: AbortSignal.timeout(9000) });
     const d = await r.json();
-    const items = d?.data?.sell || [];
-    return items.length ? parseFloat(items[0].price) : null;
+    let orders = d?.data;
+    if (orders && typeof orders === 'object' && !Array.isArray(orders)) {
+      orders = orders.buy || orders.sell || [];
+    }
+    const prices = (orders || []).map(o => parseFloat(o.price)).filter(v => v > 500 && v < 2000);
+    return prices.length ? Math.min(...prices) : null;
   } catch { return null; }
 }
 
@@ -1107,18 +1225,18 @@ async function fetchBinance() {
   try {
     const r = await fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Origin': 'https://p2p.binance.com' },
       body: JSON.stringify({
-        fiat:'CLP', page:1, rows:3, tradeType:'BUY', asset:'USDT',
-        countries:[], proMerchantAds:false, shieldMerchantAds:false, filterType:'all',
-        periods:[], additionalKycVerifyFilter:0, publisherType:null, payTypes:[],
-        classifies:['mass','profession'],
+        asset: 'USDT', fiat: 'CLP', merchantCheck: false, page: 1, payTypes: [],
+        publisherType: null, rows: 5, tradeType: 'SELL',
       }),
       signal: AbortSignal.timeout(9000),
     });
     const d = await r.json();
+    if (d.code !== '000000') return null;
     const ads = d?.data || [];
-    return ads.length ? parseFloat(ads[0].adv.price) : null;
+    const prices = ads.map(ad => parseFloat(ad?.adv?.price || 0)).filter(v => v > 0);
+    return prices.length ? Math.min(...prices) : null;
   } catch { return null; }
 }
 
@@ -1564,6 +1682,109 @@ function renderOpsDay(pos) {
   }
 }
 
+function _tracePipeClass(pipe) {
+  if (pipe === 'conciliado') return 'pipe-ok';
+  if (pipe === 'seguimiento') return 'pipe-muted';
+  return 'pipe-warn';
+}
+
+function _traceBadgeClass(pipe) {
+  if (pipe === 'conciliado') return 'ok';
+  if (pipe === 'seguimiento') return 'lo';
+  return 'mid';
+}
+
+function _tracePipeLabel(pipe) {
+  const M = {
+    conciliado: 'Conciliado',
+    deposito_detectado: 'Depósito',
+    orden_ok_sin_pago: 'Orden sin pago',
+    pago_sin_banco_api: 'Pago sin API',
+    seguimiento: 'Seguimiento',
+    solo_banco_gmail: 'Huérfano',
+  };
+  return M[pipe] || pipe || '—';
+}
+
+function renderTrace(tl) {
+  const tbody = document.getElementById('trace-tbody');
+  const otbody = document.getElementById('trace-orphan-tbody');
+  const meta = document.getElementById('trace-meta');
+  if (!tbody || !otbody) return;
+
+  if (!tl || tl.error) {
+    tbody.innerHTML = '<tr><td colspan="6" class="trace-empty">Sin trazabilidad (backend no accesible o error)</td></tr>';
+    otbody.innerHTML = '<tr><td colspan="4" class="trace-empty">—</td></tr>';
+    if (meta) meta.textContent = '—';
+    return;
+  }
+
+  const st = tl.stats || {};
+  const gen = (tl.generated_at || '').slice(11, 19);
+  if (meta) {
+    meta.textContent =
+      'Emails ' + (st.n_emails ?? '—') +
+      ' · Conciliados ' + (st.conciliado ?? '—') +
+      ' · Con depósito API ' + (st.con_deposito ?? '—') +
+      ' · Solo email ' + (st.solo_email ?? '—') +
+      (gen ? ' · srv ' + gen : '');
+  }
+
+  const ops = Array.isArray(tl.operaciones) ? tl.operaciones : [];
+  if (!ops.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="trace-empty">No hay emails de exchanges en DB. Ejecuta gmail_scraper + cuenta imadmachine.</td></tr>';
+  } else {
+    tbody.innerHTML = ops.map(function (row) {
+      const em = row.email || {};
+      const pg = row.pago;
+      const bk = row.banco_api;
+      const pipe = row.pipeline;
+      const tr = _tracePipeClass(pipe);
+      const bc = _traceBadgeClass(pipe);
+      const ex = row.exchange || '—';
+      const orden = em.orden_id || (pg && pg.orden_id) || '—';
+      const clpE = em.monto_clp_inferido != null ? '$' + _fmt(em.monto_clp_inferido) : '—';
+      const clpP = pg ? '$' + _fmt(pg.monto) : '—';
+      const pagoCell = !pg ? '—' : (
+        '#' + pg.id + ' ' + (pg.estado || '') + '<span class="trace-mini">' +
+        (pg.fuente || '') + ' · ' + (pg.banco_origen || '').slice(0, 24) + '</span>'
+      );
+      const bancoCell = !bk ? '—' : (
+        '$' + _fmt(bk.monto) + '<span class="trace-mini">' +
+        String(bk.fecha || '').slice(11, 16) + ' · ' + String(bk.remitente || '').slice(0, 28) + '</span>'
+      );
+      const m = row.match || {};
+      const matchCell = (m.pago || '—') + ' / ' + (m.banco || '—');
+      return '<tr class="trace-row-pipe ' + tr + '">' +
+        '<td><span class="trace-badge ' + bc + '">' + _tracePipeLabel(pipe) + '</span></td>' +
+        '<td>' + ex + '<span class="trace-mini">' + String(em.fecha || '').slice(5, 16).replace('T', ' ') + '</span></td>' +
+        '<td><strong>' + orden + '</strong><span class="trace-mini">email ' + clpE + ' · pago ' + clpP + '</span></td>' +
+        '<td>' + pagoCell + '</td>' +
+        '<td>' + bancoCell + '</td>' +
+        '<td>' + matchCell + '</td></tr>';
+    }).join('');
+  }
+
+  const orphans = Array.isArray(tl.pagos_huerfanos) ? tl.pagos_huerfanos : [];
+  if (!orphans.length) {
+    otbody.innerHTML = '<tr><td colspan="4" class="trace-empty">Sin pagos huérfanos en la ventana</td></tr>';
+  } else {
+    otbody.innerHTML = orphans.map(function (row) {
+      const pg = row.pago || {};
+      const bk = row.banco_api;
+      const pagoCell = '#' + pg.id + ' · ' + (pg.estado || '') + ' · $' + _fmt(pg.monto);
+      const bancoCell = !bk ? '—' : (
+        '$' + _fmt(bk.monto) + '<span class="trace-mini">' + String(bk.fecha || '').slice(5, 16) + '</span>'
+      );
+      return '<tr class="trace-row-pipe ' + _tracePipeClass(row.pipeline) + '">' +
+        '<td>' + (pg.fuente || '') + '<span class="trace-mini">' + (pg.banco_origen || '').slice(0, 28) + '</span></td>' +
+        '<td>' + pagoCell + '</td>' +
+        '<td>' + bancoCell + '</td>' +
+        '<td>' + ((row.match || {}).banco || '—') + '</td></tr>';
+    }).join('');
+  }
+}
+
 // ══════════════════════════════════════════════════════════════
 // MAIN FETCH CYCLE
 // ══════════════════════════════════════════════════════════════
@@ -1580,16 +1801,18 @@ async function fetchAll() {
     _apiGet('/api/skipo/inventory'),
     _apiGet('/api/history?limit=48'),
     _apiGet('/api/skipo/detalle'),
+    _apiGet('/api/operaciones/timeline?emails=55&pagos=100&banco=40'),
   ]);
 
-  const [bybit, okx, binance, usdclp, snap, movs, resumen, inventory, history, detalle]
+  const [bybit, okx, binance, usdclp, snap, movs, resumen, inventory, history, detalle, timeline]
     = results.map(r => r.status === 'fulfilled' ? r.value : null);
 
   // Merge exchange prices: direct fetch takes priority over snapshot cache
   const bybitP   = bybit   || snap?.bybit_p2p;
   const okxP     = okx     || snap?.okx_p2p;
   const binanceP = binance || snap?.binance_p2p;
-  const skipoP   = snap?.skipo_venta || snap?.skipo_compra;
+  // Referencia Skipo para spread: precio al que compras USDT (compra), no venta a cliente.
+  const skipoP   = snap?.skipo_compra ?? snap?.skipo_venta ?? null;
   const usdclpV  = usdclp  || snap?.usdclp;
 
   // Compute spread
@@ -1609,6 +1832,7 @@ async function fetchAll() {
   renderDetalle(Array.isArray(detalle) ? detalle : null);
   renderBanco(movs, resumen);
   renderPosition(inventory);
+  renderTrace(timeline);
 
   // Auto-fill precio venta con mejor precio mercado
   const pvInput = document.getElementById('ops-precio-venta');
@@ -1617,6 +1841,22 @@ async function fetchAll() {
   // Topbar
   if (usdclpV) document.getElementById('topbar-usdclp').textContent = 'USD/CLP $' + _fmt(usdclpV);
   document.getElementById('status-dot').className = snap ? 'status-dot' : 'status-dot offline';
+
+  const banner = document.getElementById('backend-banner');
+  if (banner) {
+    const backendReachable = snap != null || movs != null || inventory != null || timeline != null;
+    if (!backendReachable) {
+      banner.classList.add('visible');
+      banner.textContent =
+        'Sin datos del backend (Skipo / banco / inventario). Comprueba que SR-71 corre en :8080 y ngrok activo. ' +
+        'URL API usada: ' + SR71_API +
+        ' — Para otra URL: añade ?api=https://tu-tunel.ngrok-free.app a la barra de direcciones, o en consola: ' +
+        'localStorage.setItem("sr71_api_base","https://..."); location.reload()';
+    } else {
+      banner.classList.remove('visible');
+      banner.textContent = '';
+    }
+  }
 
   // Footer timestamp
   document.getElementById('footer-update').textContent = '\u00FAltima actualizaci\u00F3n: ' +
