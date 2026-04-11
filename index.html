@@ -545,6 +545,12 @@
     .trace-empty { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink3); padding: 20px 14px; text-align: center; }
     .trace-h3 { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink3); margin: 20px 0 8px; letter-spacing: .06em; }
 
+    /* Skipo pagos pendientes (API /v1/converts no COMPLETED) */
+    .skipo-pend-section { margin-bottom: 28px; }
+    .skipo-pend-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .skipo-pend-summary { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--bronze); font-weight: 700; }
+    .banco-config-hint { font-size: 10px; color: var(--ink3); max-width: 640px; line-height: 1.4; margin-bottom: 10px; }
+
     /* Banco Chile */
     .banco-section { margin-bottom: 32px; }
     .banco-header {
@@ -859,6 +865,34 @@
         </div>
 
       </div>
+    </section>
+
+    <!-- Skipo: mismos pendientes que la app (API converts ≠ COMPLETED) -->
+    <section class="skipo-pend-section" id="skipo-pend-section">
+      <div class="skipo-pend-head">
+        <p class="section-label" style="margin-bottom:0">Skipo &#8212; pagos pendientes</p>
+        <span class="skipo-pend-summary" id="skipo-pend-summary">—</span>
+      </div>
+      <p class="banco-config-hint" id="banco-config-hint"></p>
+      <p style="font-size:11px;color:var(--ink3);max-width:900px;line-height:1.5;margin-bottom:10px">
+        Misma fuente que la app: GET <code style="font-size:10px">/v1/converts</code>, órdenes de compra USDT (CLP) que
+        <strong>no</strong> están en estado COMPLETED. El sync a la base de datos del cockpit solo guarda las completadas.
+      </p>
+      <table class="banco-table">
+        <thead>
+          <tr>
+            <th>Creado</th>
+            <th>Estado API</th>
+            <th>Total CLP</th>
+            <th>USDT esperado</th>
+            <th>Precio CLP/USDT</th>
+            <th>ID / pagado</th>
+          </tr>
+        </thead>
+        <tbody id="skipo-pend-tbody">
+          <tr><td colspan="6" class="banco-empty">Cargando…</td></tr>
+        </tbody>
+      </table>
     </section>
 
     <!-- Trazabilidad: exchange email → conciliador → Banco Chile API -->
@@ -1706,6 +1740,54 @@ function _tracePipeLabel(pipe) {
   return M[pipe] || pipe || '—';
 }
 
+function renderSkipoPendientes(data, bancoCfg) {
+  const tbody = document.getElementById('skipo-pend-tbody');
+  const sumEl = document.getElementById('skipo-pend-summary');
+  const bankEl = document.getElementById('banco-config-hint');
+  if (bankEl && bancoCfg) {
+    bankEl.textContent = bancoCfg.banco_api_configurada
+      ? 'Banco Chile API: variables .env completas — el loop SR-71 consulta movimientos y llena la tabla de abajo.'
+      : 'Banco Chile API: faltan BANCO_CHILE_* en .env o credenciales inválidas — no habrá movimientos en DB.';
+  }
+  if (!tbody) return;
+  if (!data || (data.error && !Array.isArray(data.ordenes))) {
+    tbody.innerHTML = '<tr><td colspan="6" class="banco-empty">Sin respuesta Skipo (¿backend?)</td></tr>';
+    if (sumEl) sumEl.textContent = '—';
+    return;
+  }
+  if (data.configurado === false) {
+    tbody.innerHTML = '<tr><td colspan="6" class="banco-empty">Skipo API no configurada (SKIPO_API_KEY / SKIPO_PRIVATE_KEY_PATH / SKIPO_API_BASE)</td></tr>';
+    if (sumEl) sumEl.textContent = '—';
+    return;
+  }
+  const tot = data.totales || {};
+  if (sumEl) {
+    sumEl.textContent =
+      (tot.n_ordenes || 0) + ' órdenes · $' + _fmt(tot.total_clp_pendiente || 0) + ' CLP · ' +
+      _fmtD(tot.total_usdt_esperado, 2) + ' USDT';
+  }
+  const rows = data.ordenes || [];
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="banco-empty">No hay órdenes abiertas en API (o todas COMPLETED)</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(function (o) {
+    const fecha = (o.created_at || '').slice(0, 16).replace('T', ' ');
+    const st = String(o.status || '—');
+    const stCls = /PEND|WAIT|PROC|ATRAS|DELAY|OVERDUE|OPEN/i.test(st) ? 'style="color:var(--red2);font-weight:700"' : '';
+    const paid = o.paid_clp != null ? (' · pagado $' + _fmt(o.paid_clp)) : '';
+    const tid = (o.transaction_id || '').toString();
+    return '<tr>' +
+      '<td>' + fecha + '</td>' +
+      '<td ' + stCls + '>' + st + '</td>' +
+      '<td>$' + _fmt(o.total_clp) + '</td>' +
+      '<td>' + _fmtD(o.usdt_a_recibir, 2) + '</td>' +
+      '<td>$' + _fmt(o.precio_clp_por_usdt || 0) + '</td>' +
+      '<td class="trace-mini">' + tid.slice(0, 14) + paid + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
 function renderTrace(tl) {
   const tbody = document.getElementById('trace-tbody');
   const otbody = document.getElementById('trace-orphan-tbody');
@@ -1802,9 +1884,11 @@ async function fetchAll() {
     _apiGet('/api/history?limit=48'),
     _apiGet('/api/skipo/detalle'),
     _apiGet('/api/operaciones/timeline?emails=55&pagos=100&banco=40'),
+    _apiGet('/api/skipo/pendientes'),
+    _apiGet('/api/banco/config'),
   ]);
 
-  const [bybit, okx, binance, usdclp, snap, movs, resumen, inventory, history, detalle, timeline]
+  const [bybit, okx, binance, usdclp, snap, movs, resumen, inventory, history, detalle, timeline, skipoPend, bancoCfg]
     = results.map(r => r.status === 'fulfilled' ? r.value : null);
 
   // Merge exchange prices: direct fetch takes priority over snapshot cache
@@ -1832,6 +1916,7 @@ async function fetchAll() {
   renderDetalle(Array.isArray(detalle) ? detalle : null);
   renderBanco(movs, resumen);
   renderPosition(inventory);
+  renderSkipoPendientes(skipoPend, bancoCfg);
   renderTrace(timeline);
 
   // Auto-fill precio venta con mejor precio mercado
