@@ -30,10 +30,23 @@
       --amber2:  #e3b341;
       --border:  #30363d;
       --black:   #010409;
+      --panel:   rgba(16, 19, 26, 0.88);
+      --panel-2: rgba(22, 26, 34, 0.94);
+      --hairline: rgba(212, 168, 83, 0.16);
+      --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.42);
+      --shadow-in: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
 
     html, body { height: 100%; }
-    body { background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', sans-serif; }
+    body {
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 100% 70% at 50% -15%, rgba(212, 168, 83, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 100% 0%, rgba(63, 185, 80, 0.03) 0%, transparent 50%);
+      color: var(--ink);
+      font-family: 'IBM Plex Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
 
     /* ── SCREENS ─────────────────────────────────────────────────────────────── */
     .screen { display: none; min-height: 100vh; }
@@ -193,9 +206,12 @@
       justify-content: space-between;
       padding: 14px 32px;
       border-bottom: 1px solid var(--border);
-      background: var(--surface);
+      background: rgba(18, 21, 28, 0.82);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       position: sticky; top: 0; z-index: 100;
       flex-shrink: 0;
+      box-shadow: var(--shadow-in);
     }
     .topbar-left { display: flex; align-items: center; gap: 12px; }
     .topbar-logo {
@@ -249,16 +265,19 @@
     .btn-logout:hover { color: var(--red); border-color: var(--red2); }
 
     /* Main content */
-    .main-content { padding: 32px; max-width: 1440px; margin: 0 auto; flex: 1; }
+    .main-content { padding: 28px 32px 40px; max-width: 1320px; margin: 0 auto; flex: 1; }
 
     /* Hero */
     .hero {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      padding: 40px 0 36px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 32px;
+      padding: 28px 32px 30px;
+      margin-bottom: 28px;
+      border-radius: 16px;
+      border: 1px solid var(--hairline);
+      background: linear-gradient(165deg, var(--panel-2) 0%, rgba(12, 14, 18, 0.65) 100%);
+      box-shadow: var(--shadow-lg), var(--shadow-in);
     }
     .hero-left { display: flex; flex-direction: column; gap: 6px; }
     .section-label {
@@ -269,14 +288,121 @@
       color: var(--ink3);
       text-transform: uppercase;
     }
+
+    /* Panel headers (cockpit decks) */
+    .deck-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .deck-kicker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      margin-bottom: 6px;
+    }
+    .deck-title {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin: 0 0 6px 0;
+      line-height: 1.25;
+    }
+    .deck-sub {
+      font-size: 12px;
+      color: var(--ink3);
+      line-height: 1.5;
+      max-width: 640px;
+      margin: 0;
+    }
+    .deck-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--bronze2);
+      background: rgba(212, 168, 83, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .deck-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink3);
+      white-space: nowrap;
+      padding-top: 4px;
+    }
+
+    .skipo-wallet-section {
+      margin-bottom: 28px;
+      padding: 24px 26px 26px;
+      border-radius: 16px;
+      border: 1px solid var(--hairline);
+      background: linear-gradient(180deg, var(--panel-2) 0%, rgba(12, 14, 18, 0.5) 100%);
+      box-shadow: var(--shadow-lg), var(--shadow-in);
+    }
+    .wallet-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid rgba(48, 54, 61, 0.85); }
+    .wallet-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .wallet-table th {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink3);
+      text-align: left;
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.25);
+      border-bottom: 1px solid var(--border);
+    }
+    .wallet-table td {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(48, 54, 61, 0.6);
+      color: var(--ink);
+      font-feature-settings: "tnum" 1;
+    }
+    .wallet-table tr:last-child td { border-bottom: none; }
+    .wallet-table tr:hover td { background: rgba(212, 168, 83, 0.04); }
+    .wallet-type {
+      display: inline-block;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .wallet-type.fiat { background: rgba(100, 120, 140, 0.2); color: var(--ink2); }
+    .wallet-type.crypto { background: rgba(63, 185, 80, 0.12); color: var(--green2); }
+    .wallet-empty {
+      text-align: center;
+      color: var(--ink3);
+      padding: 28px 16px !important;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
     .hero-spread-row { display: flex; align-items: baseline; gap: 6px; }
     .hero-spread {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 600;
-      font-size: 56px;
+      font-size: 52px;
       line-height: 0.95;
       color: var(--green2);
       transition: color .3s;
+      font-feature-settings: "tnum" 1, "lnum" 1;
     }
     .hero-spread.neutral { color: var(--amber); }
     .hero-spread.danger  { color: var(--red); }
@@ -302,11 +428,13 @@
     }
     .signal-badge {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      letter-spacing: 2px;
-      font-weight: 700;
-      padding: 10px 24px;
-      border: 2px solid currentColor;
+      font-size: 12px;
+      letter-spacing: 3px;
+      font-weight: 600;
+      padding: 10px 22px;
+      border: 1px solid currentColor;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.2);
     }
     .signal-badge.comprar { color: var(--green); border-color: var(--green); }
     .signal-badge.esperar { color: var(--amber); border-color: var(--amber2); }
@@ -319,27 +447,38 @@
     }
 
     /* Prices */
-    .prices-section { margin-bottom: 32px; }
+    .prices-section { margin-bottom: 28px; }
     .prices-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      margin-top: 16px;
+      gap: 14px;
+      margin-top: 18px;
     }
     .price-card {
-      background: var(--bg);
-      padding: 24px 20px;
+      background: var(--panel);
+      padding: 22px 20px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      transition: background .2s;
+      gap: 10px;
+      transition: transform .18s ease, border-color .18s, box-shadow .18s;
       position: relative;
+      border-radius: 12px;
+      border: 1px solid var(--hairline);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28), var(--shadow-in);
     }
-    .price-card:hover { background: var(--bg2); }
-    .price-card.best-card { background: #0d2818; border-left: 3px solid var(--green2); }
-    .price-card.skipo-card { background: #161308; border-left: 3px solid var(--bronze); }
+    .price-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(212, 168, 83, 0.28);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    }
+    .price-card.best-card {
+      background: linear-gradient(160deg, rgba(16, 42, 28, 0.95) 0%, var(--panel) 100%);
+      border-color: rgba(86, 211, 100, 0.35);
+    }
+    .price-card.skipo-card {
+      background: linear-gradient(160deg, rgba(38, 32, 18, 0.92) 0%, var(--panel) 100%);
+      border-color: rgba(212, 168, 83, 0.35);
+    }
     .card-exchange {
       font-family: 'IBM Plex Sans', sans-serif;
       font-size: 10px;
@@ -351,9 +490,11 @@
     .skipo-card .card-exchange { color: var(--bronze); }
     .card-price {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 20px;
-      font-weight: 700;
+      font-size: 19px;
+      font-weight: 600;
       color: var(--ink);
+      font-feature-settings: "tnum" 1, "lnum" 1;
+      letter-spacing: -0.02em;
     }
     .skipo-card .card-price { color: var(--bronze); }
     .card-spread { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--green2); }
@@ -444,10 +585,11 @@
       gap: 16px;
     }
     .ops-card {
-      background: var(--bg1);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 20px;
+      background: var(--panel);
+      border: 1px solid var(--hairline);
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.28), var(--shadow-in);
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -552,10 +694,11 @@
     /* Skipo pagos pendientes (API /v1/converts no COMPLETED) */
     .skipo-pend-section {
       margin-bottom: 28px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 20px 22px;
-      background: linear-gradient(180deg, var(--bg1) 0%, var(--bg) 100%);
+      border: 1px solid var(--hairline);
+      border-radius: 16px;
+      padding: 24px 26px 26px;
+      background: linear-gradient(180deg, var(--panel-2) 0%, rgba(12, 14, 18, 0.55) 100%);
+      box-shadow: var(--shadow-lg), var(--shadow-in);
     }
     .skipo-pend-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
     .skipo-pend-summary { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--bronze2); font-weight: 700; }
@@ -587,7 +730,13 @@
     /* Banco Chile */
     .banco-section { margin-bottom: 32px; }
     .banco-header {
-      display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px;
+      display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap;
+      gap: 10px 16px; margin-bottom: 16px;
+    }
+    .banco-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+    .banco-saldo {
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--green2);
+      font-weight: 600; max-width: 100%;
     }
     .banco-total { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--green); font-weight: 700; }
     .banco-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
@@ -611,7 +760,17 @@
 
     /* Main grid */
     .main-grid { margin-bottom: 40px; }
-    .position-box { border: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 4px; max-width: 340px; }
+    .position-box {
+      border: 1px solid var(--hairline);
+      border-radius: 14px;
+      padding: 22px 22px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-width: 360px;
+      background: var(--panel);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3), var(--shadow-in);
+    }
     .pos-title {
       font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 3px;
       text-transform: uppercase; color: var(--ink3); margin-bottom: 12px;
@@ -796,6 +955,39 @@
           <div class="card-price" id="price-binance">&#8212;</div>
           <div class="card-spread" id="spread-binance">&#8212;</div>
         </div>
+      </div>
+    </section>
+
+    <!-- Skipo: saldos de cuenta (balances oficiales) -->
+    <section class="skipo-wallet-section" id="skipo-wallet-section" aria-labelledby="skipo-wallet-title">
+      <div class="deck-head">
+        <div>
+          <p class="deck-kicker">Skipo API</p>
+          <h2 class="deck-title" id="skipo-wallet-title">Saldos de cuenta</h2>
+          <p class="deck-sub">
+            Balances por moneda según
+            <span class="deck-code">GET /v1/currencies</span>
+            — disponible, congelado, tipo y equivalente USD cuando la API lo entrega.
+          </p>
+        </div>
+        <span class="deck-meta" id="skipo-wallet-meta">—</span>
+      </div>
+      <div class="wallet-table-wrap">
+        <table class="wallet-table">
+          <thead>
+            <tr>
+              <th>Moneda</th>
+              <th>Disponible</th>
+              <th>Congelado</th>
+              <th>Tipo</th>
+              <th>Equiv. pref.</th>
+              <th>USD</th>
+            </tr>
+          </thead>
+          <tbody id="skipo-wallet-tbody">
+            <tr><td colspan="6" class="wallet-empty">Cargando saldos…</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
@@ -1020,7 +1212,10 @@
     <section class="banco-section">
       <div class="banco-header">
         <p class="section-label" style="margin-bottom:0">Banco Chile &#8212; movimientos</p>
-        <span class="banco-total" id="banco-total-hoy">$ &#8212; hoy</span>
+        <div class="banco-header-right">
+          <span class="banco-saldo" id="banco-saldo-line">Saldo: —</span>
+          <span class="banco-total" id="banco-total-hoy">$ — hoy</span>
+        </div>
       </div>
       <table class="banco-table">
         <thead>
@@ -1362,6 +1557,15 @@ const _fmtClp2 = v => (v != null && !Number.isNaN(+v))
   ? Number(v).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   : '\u2014';
 
+function _escHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 // ══════════════════════════════════════════════════════════════
 // RENDER FUNCTIONS
 // ══════════════════════════════════════════════════════════════
@@ -1455,15 +1659,33 @@ function renderHero(spread, skipo, bestEx) {
 }
 
 function renderBanco(movs, resumen) {
-  const tbody   = document.getElementById('banco-tbody');
-  const totalEl = document.getElementById('banco-total-hoy');
+  const tbody    = document.getElementById('banco-tbody');
+  const totalEl  = document.getElementById('banco-total-hoy');
+  const saldoLine = document.getElementById('banco-saldo-line');
 
-  if (resumen) {
+  if (saldoLine && resumen) {
+    const sd = resumen.saldo_disponible;
+    const sc = resumen.saldo_contable;
+    const mon = resumen.moneda || 'CLP';
+    const ts = resumen.saldo_actualizado_at
+      ? ' · sync ' + String(resumen.saldo_actualizado_at).slice(11, 19).replace('T', ' ')
+      : '';
+    if (sd != null) {
+      let t = 'Disponible $' + _fmt(sd) + ' ' + mon;
+      if (sc != null && Number(sc) !== Number(sd)) t += ' · Contable $' + _fmt(sc);
+      if (resumen.numero_cuenta) t += ' · Cta …' + String(resumen.numero_cuenta).slice(-4);
+      saldoLine.textContent = t + ts;
+    } else {
+      saldoLine.textContent = 'Saldo: — (ejecuta ciclo banco API o revisa .env)';
+    }
+  }
+
+  if (resumen && totalEl) {
     totalEl.textContent = '$' + _fmt(resumen.total_abonos_hoy || 0) + ' abonos hoy';
   }
 
   if (!movs || !movs.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="banco-empty">Sin movimientos registrados (backend no accesible)</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="banco-empty">Sin movimientos en caché (backend no accesible o aún sin cargar)</td></tr>';
     return;
   }
 
@@ -1811,6 +2033,59 @@ function _tracePipeLabel(pipe) {
   return M[pipe] || pipe || '—';
 }
 
+function renderSkipoCurrencies(data) {
+  const tbody = document.getElementById('skipo-wallet-tbody');
+  const meta = document.getElementById('skipo-wallet-meta');
+  if (!tbody) return;
+
+  if (!data || data.ok === false) {
+    const err = data && data.error;
+    const msg = !data
+      ? 'Sin respuesta del backend (revisa ngrok / SR-71).'
+      : err === 'skipo_api_no_configurada'
+        ? 'API Skipo no configurada en el servidor (SKIPO_API_KEY y clave privada).'
+        : String(err || 'Error al consultar saldos.');
+    tbody.innerHTML = '<tr><td colspan="6" class="wallet-empty">' + _escHtml(msg) + '</td></tr>';
+    if (meta) meta.textContent = '—';
+    return;
+  }
+
+  const items = data.items || [];
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="wallet-empty">Lista vacía — la API no devolvió monedas en esta página.</td></tr>';
+    if (meta) meta.textContent = '0 filas · p.' + (data.page || 1);
+    return;
+  }
+
+  function _typCls(t) {
+    const u = String(t || '').toUpperCase();
+    return u === 'FIAT' ? 'wallet-type fiat' : 'wallet-type crypto';
+  }
+
+  tbody.innerHTML = items.map(function (row) {
+    const id = row.currency_id != null ? String(row.currency_id) : '—';
+    const bal = row.balance != null ? String(row.balance) : '—';
+    const frz = row.balance_frozen != null ? String(row.balance_frozen) : '—';
+    const typ = String(row.type || '—');
+    const pref = row.balance_pref_currency != null ? String(row.balance_pref_currency) : '—';
+    const usd = row.balance_usd != null ? String(row.balance_usd) : '—';
+    return '<tr>' +
+      '<td>' + _escHtml(id) + '</td>' +
+      '<td>' + _escHtml(bal) + '</td>' +
+      '<td>' + _escHtml(frz) + '</td>' +
+      '<td><span class="' + _typCls(typ) + '">' + _escHtml(typ) + '</span></td>' +
+      '<td>' + _escHtml(pref) + '</td>' +
+      '<td>' + _escHtml(usd) + '</td>' +
+      '</tr>';
+  }).join('');
+
+  if (meta) {
+    const n = items.length;
+    const tot = data.total != null ? data.total : n;
+    meta.textContent = n + ' mostradas · total API ' + tot + ' · p.' + (data.page || 1);
+  }
+}
+
 function renderSkipoPendientes(data, bancoCfg) {
   const tbody = document.getElementById('skipo-pend-tbody');
   const sumEl = document.getElementById('skipo-pend-summary');
@@ -2007,6 +2282,7 @@ async function fetchAll() {
     _apiGet('/api/banco/movimientos'),
     _apiGet('/api/banco/resumen'),
     _apiGet('/api/skipo/inventory'),
+    _apiGet('/api/skipo/currencies?page=1&take=50'),
     _apiGet('/api/history?limit=48'),
     _apiGet('/api/skipo/detalle'),
     _apiGet('/api/operaciones/timeline?emails=55&pagos=100&banco=40'),
@@ -2014,7 +2290,7 @@ async function fetchAll() {
     _apiGet('/api/banco/config'),
   ]);
 
-  const [bybit, okx, binance, usdclp, snap, movs, resumen, inventory, history, detalle, timeline, skipoPend, bancoCfg]
+  const [bybit, okx, binance, usdclp, snap, movs, resumen, inventory, skipoCur, history, detalle, timeline, skipoPend, bancoCfg]
     = results.map(r => r.status === 'fulfilled' ? r.value : null);
 
   // Merge exchange prices: direct fetch takes priority over snapshot cache
@@ -2042,6 +2318,7 @@ async function fetchAll() {
   renderDetalle(Array.isArray(detalle) ? detalle : null);
   renderBanco(movs, resumen);
   renderPosition(inventory);
+  renderSkipoCurrencies(skipoCur);
   renderSkipoPendientes(skipoPend, bancoCfg);
   renderTrace(timeline);
 
@@ -2055,7 +2332,7 @@ async function fetchAll() {
 
   const banner = document.getElementById('backend-banner');
   if (banner) {
-    const backendReachable = snap != null || movs != null || inventory != null || timeline != null;
+    const backendReachable = snap != null || movs != null || inventory != null || timeline != null || skipoCur != null;
     if (!backendReachable) {
       banner.classList.add('visible');
       banner.textContent =
