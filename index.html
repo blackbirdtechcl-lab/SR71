@@ -7,46 +7,72 @@
   <!-- Blackbird: no modificar sin acuerdo — intro+video sr71_intro.mp4, audio macarena.mp3, SUPERADMIN blackbirdtech.cl@gmail.com -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" onload="initGoogleAuth()" async defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:      #0c0e12;
-      --bg1:     #12151c;
-      --bg2:     #1c2128;
-      --surface: #12151c;
-      --ink:     #e6edf3;
-      --ink2:    #8b949e;
-      --ink3:    #6e7681;
-      --bronze:  #d4a853;
-      --bronze2: #e8c170;
-      --green:   #3fb950;
-      --green2:  #56d364;
-      --red:     #f85149;
-      --red2:    #ff7b72;
-      --amber:   #d29922;
-      --amber2:  #e3b341;
-      --border:  #30363d;
-      --black:   #010409;
-      --panel:   rgba(16, 19, 26, 0.88);
-      --panel-2: rgba(22, 26, 34, 0.94);
-      --hairline: rgba(212, 168, 83, 0.16);
-      --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.42);
-      --shadow-in: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      --bg:      #050608;
+      --bg1:     #0e1018;
+      --bg2:     #141922;
+      --surface: #0a0c10;
+      --ink:     #eef2f7;
+      --ink2:    #9aa7b8;
+      --ink3:    #5c6570;
+      --bronze:  #c9a227;
+      --bronze2: #e4d099;
+      --green:   #2ee59d;
+      --green2:  #5ef0b8;
+      --red:     #ff6b6b;
+      --red2:    #ff9e9e;
+      --amber:   #ffb020;
+      --amber2:  #ffd080;
+      --border:  #252a33;
+      --black:   #020203;
+      --panel:   rgba(12, 14, 20, 0.92);
+      --panel-2: rgba(18, 22, 32, 0.96);
+      --hairline: rgba(201, 162, 39, 0.22);
+      --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.55);
+      --shadow-in: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+      --font-ui: 'Outfit', 'IBM Plex Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
     }
 
     html, body { height: 100%; }
     body {
       background: var(--bg);
       background-image:
-        radial-gradient(ellipse 100% 70% at 50% -15%, rgba(212, 168, 83, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 40% at 100% 0%, rgba(63, 185, 80, 0.03) 0%, transparent 50%);
+        radial-gradient(ellipse 90% 60% at 50% -20%, rgba(201, 162, 39, 0.09) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 100% 10%, rgba(46, 229, 157, 0.05) 0%, transparent 45%);
       color: var(--ink);
-      font-family: 'IBM Plex Sans', sans-serif;
+      font-family: var(--font-ui);
       -webkit-font-smoothing: antialiased;
     }
+
+    /* HUD: rejilla + capa solo en dashboard */
+    #screen-dashboard {
+      background: linear-gradient(180deg, #050608 0%, #080a0f 100%);
+      min-height: 100vh;
+    }
+    #screen-dashboard .main-content {
+      position: relative;
+      isolation: isolate;
+    }
+    #screen-dashboard .main-content::before {
+      content: '';
+      position: absolute;
+      z-index: 0;
+      left: 0; right: 0; top: -8px;
+      height: min(120vh, 2400px);
+      background-image:
+        linear-gradient(rgba(201, 162, 39, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201, 162, 39, 0.05) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(180deg, #000 0%, #000 70%, transparent 100%);
+      pointer-events: none;
+    }
+    #screen-dashboard .main-content > * { position: relative; z-index: 1; }
 
     /* ── SCREENS ─────────────────────────────────────────────────────────────── */
     .screen { display: none; min-height: 100vh; }
@@ -171,7 +197,8 @@
 
     /* Ticker */
     .ticker-wrap {
-      background: var(--black);
+      background: linear-gradient(90deg, #040508 0%, #0a0d14 50%, #040508 100%);
+      border-bottom: 1px solid var(--hairline);
       height: 36px;
       overflow: hidden;
       white-space: nowrap;
@@ -204,23 +231,37 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 32px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(18, 21, 28, 0.82);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      padding: 12px 28px;
+      border-bottom: 1px solid var(--hairline);
+      background: rgba(6, 8, 12, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       position: sticky; top: 0; z-index: 100;
       flex-shrink: 0;
-      box-shadow: var(--shadow-in);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), var(--shadow-in);
     }
-    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
     .topbar-logo {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 600;
-      font-size: 18px;
-      letter-spacing: 4px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: 6px;
       color: var(--bronze2);
+      text-shadow: 0 0 24px rgba(201, 162, 39, 0.25);
     }
+    .api-pill {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: default;
+      user-select: none;
+    }
+    .api-pill.on  { color: var(--green2); border-color: rgba(46, 229, 157, 0.45); background: rgba(46, 229, 157, 0.08); }
+    .api-pill.off { color: var(--red2);  border-color: rgba(255, 107, 107, 0.4); background: rgba(255, 107, 107, 0.06); }
     .status-dot {
       width: 7px; height: 7px;
       border-radius: 50%;
@@ -308,13 +349,13 @@
       margin-bottom: 6px;
     }
     .deck-title {
-      font-family: 'IBM Plex Sans', sans-serif;
-      font-size: 18px;
-      font-weight: 500;
-      letter-spacing: -0.02em;
+      font-family: var(--font-ui);
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
       color: var(--ink);
       margin: 0 0 6px 0;
-      line-height: 1.25;
+      line-height: 1.2;
     }
     .deck-sub {
       font-size: 12px;
@@ -896,6 +937,7 @@
   <header class="topbar">
     <div class="topbar-left">
       <span class="topbar-logo">SR&#8212;71</span>
+      <span class="api-pill off" id="api-pill" title="">BACKEND</span>
       <span class="status-dot offline" id="status-dot"></span>
     </div>
     <div class="topbar-right">
@@ -1283,17 +1325,52 @@ const SUPERADMIN       = 'blackbirdtech.cl@gmail.com';
 const TOKEN_KEY        = 'sr71_auth_v1';
 const TOKEN_TTL        = 8 * 60 * 60 * 1000; // 8 horas ms
 
-// Backend SR-71 (GitHub Pages no puede hablar con localhost: hay que tunelar).
-// Prioridad: ?api=URL | localStorage sr71_api_base | default (ngrok estático en tunnel.sh)
-const SR71_API = (function resolveSr71Api() {
+// Backend SR-71 (Pages no puede usar localhost: tunel ngrok / túnel).
+// Prioridad: ?api=URL | localStorage sr71_api_base | config.json (mismo origen, editable en repo SR71)
+let SR71_API = '';
+
+async function loadSr71Api() {
+  SR71_API = '';
   try {
     const q = new URLSearchParams(window.location.search).get('api');
-    if (q && /^https?:\/\//i.test(q)) return q.replace(/\/+$/, '');
-    const ls = localStorage.getItem('sr71_api_base');
-    if (ls && /^https?:\/\//i.test(ls)) return ls.replace(/\/+$/, '');
+    if (q && /^https?:\/\//i.test(q)) {
+      SR71_API = q.replace(/\/+$/, '');
+      return;
+    }
   } catch (e) {}
-  return 'https://ernest-unparodied-unendurably.ngrok-free.dev';
-})();
+  try {
+    const ls = localStorage.getItem('sr71_api_base');
+    if (ls && /^https?:\/\//i.test(ls)) {
+      SR71_API = ls.replace(/\/+$/, '');
+      return;
+    }
+  } catch (e) {}
+  try {
+    const r = await fetch('config.json?' + Date.now(), { cache: 'no-store', signal: AbortSignal.timeout(6000) });
+    if (r.ok) {
+      const j = await r.json();
+      const u = j.sr71_api || j.api_base || j.api;
+      if (u && /^https?:\/\//i.test(String(u))) {
+        SR71_API = String(u).replace(/\/+$/, '');
+        return;
+      }
+    }
+  } catch (e) {}
+}
+
+function updateApiPill() {
+  const pill = document.getElementById('api-pill');
+  if (!pill) return;
+  if (SR71_API) {
+    pill.textContent = 'BACKEND OK';
+    pill.className = 'api-pill on';
+    pill.title = SR71_API;
+  } else {
+    pill.textContent = 'SIN BACKEND';
+    pill.className = 'api-pill off';
+    pill.title = 'Pon tu URL en config.json (repo SR71) o consola: localStorage.setItem("sr71_api_base","https://tu-ngrok...")';
+  }
+}
 
 // ══════════════════════════════════════════════════════════════
 // GOOGLE AUTH
@@ -1411,7 +1488,7 @@ function showScreen(id) {
 }
 function showIntro()     { showScreen('screen-intro'); }
 function showDenied()    { showScreen('screen-denied'); }
-function showDashboard() { showScreen('screen-dashboard'); initDashboard(); }
+function showDashboard() { showScreen('screen-dashboard'); void initDashboard(); }
 
 // ══════════════════════════════════════════════════════════════
 // MUSIC
@@ -2333,18 +2410,21 @@ async function fetchAll() {
   const banner = document.getElementById('backend-banner');
   if (banner) {
     const backendReachable = snap != null || movs != null || inventory != null || timeline != null || skipoCur != null;
-    if (!backendReachable) {
+    if (!SR71_API) {
       banner.classList.add('visible');
       banner.textContent =
-        'Sin datos del backend (Skipo / banco / inventario). Comprueba que SR-71 corre en :8080 y ngrok activo. ' +
-        'URL API usada: ' + SR71_API +
-        ' — Para otra URL: añade ?api=https://tu-tunel.ngrok-free.app a la barra de direcciones, o en consola: ' +
-        'localStorage.setItem("sr71_api_base","https://..."); location.reload()';
+        'BACKEND: sin URL. En el repo SR71 (Pages) edita config.json → "sr71_api": "https://TU-NGROK.ngrok-free.app" y haz push. ' +
+        'O en consola: localStorage.setItem("sr71_api_base","https://..."); location.reload()';
+    } else if (!backendReachable) {
+      banner.classList.add('visible');
+      banner.textContent =
+        'Backend no responde en ' + SR71_API + ' — ¿SR-71 en :8080 y ngrok activo? Prueba ?api=https://... o actualiza config.json';
     } else {
       banner.classList.remove('visible');
       banner.textContent = '';
     }
   }
+  updateApiPill();
 
   // Footer timestamp
   document.getElementById('footer-update').textContent = '\u00FAltima actualizaci\u00F3n: ' +
@@ -2368,7 +2448,9 @@ async function fetchAll() {
 // INIT DASHBOARD
 // ══════════════════════════════════════════════════════════════
 
-function initDashboard() {
+async function initDashboard() {
+  await loadSr71Api();
+  updateApiPill();
   _updateClock();
   updateTicker();
   _renderBalance();
