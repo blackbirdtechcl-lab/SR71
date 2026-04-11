@@ -709,14 +709,8 @@ const SUPERADMIN       = 'blackbirdtech.cl@gmail.com';
 const TOKEN_KEY        = 'sr71_auth_v1';
 const TOKEN_TTL        = 8 * 60 * 60 * 1000; // 8 horas ms
 
-// Backend URL: localhost en desarrollo, null en GitHub Pages (sin backend expuesto)
-const SR71_API = (() => {
-  const h = window.location.hostname;
-  if (h === 'localhost' || h === '127.0.0.1') {
-    return 'http://' + h + ':' + (window.location.port || '8080');
-  }
-  return null; // GitHub Pages: solo datos de exchanges directamente
-})();
+// Backend SR-71 — expuesto via ngrok (tunnel.sh)
+const SR71_API = "https://ernest-unparodied-unendurably.ngrok-free.dev";
 
 // ══════════════════════════════════════════════════════════════
 // GOOGLE AUTH
