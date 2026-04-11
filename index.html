@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;0,400;1,300&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" onload="initGoogleAuth()" async defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -521,8 +520,8 @@
     .banco-empty { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink3); padding: 20px 14px; text-align: center; }
 
     /* Main grid */
-    .main-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; margin-bottom: 40px; }
-    .position-box { border: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 4px; }
+    .main-grid { margin-bottom: 40px; }
+    .position-box { border: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 4px; max-width: 340px; }
     .pos-title {
       font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 3px;
       text-transform: uppercase; color: var(--ink3); margin-bottom: 12px;
@@ -536,11 +535,6 @@
     .pos-value { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--ink); font-weight: 700; }
     .pos-value.pos-green { color: var(--green2); }
     .pos-value.pos-red   { color: var(--red2); }
-    .chart-box { border: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; }
-    .chart-title {
-      font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 3px;
-      text-transform: uppercase; color: var(--ink3); margin-bottom: 16px;
-    }
 
     /* Footer */
     .footer {
@@ -549,6 +543,44 @@
     }
     .footer-copy { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--ink3); }
     .footer-update { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--ink3); }
+
+    /* Balance toggle */
+    .topbar-balance {
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink2);
+      cursor: pointer; user-select: none; padding: 4px 8px;
+      border: 1px solid var(--border); transition: background .15s;
+    }
+    .topbar-balance:hover { background: var(--bg1); }
+    .topbar-balance .bal-label { font-size: 9px; letter-spacing: 2px; color: var(--ink3); }
+    .topbar-balance .bal-val   { font-weight: 700; color: var(--ink); }
+    .topbar-balance .bal-eye   { font-size: 12px; opacity: 0.5; }
+
+    /* Skipo detalle */
+    .detalle-section { margin-bottom: 32px; }
+    .detalle-header  { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+    .detalle-toggle  {
+      font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 1px; color: var(--bronze);
+      background: none; border: none; cursor: pointer; padding: 0;
+    }
+    .detalle-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); font-size: 11px; }
+    .detalle-table th {
+      font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--ink3); padding: 8px 12px; text-align: right; background: var(--bg1); border-bottom: 1px solid var(--border);
+    }
+    .detalle-table th:first-child { text-align: left; }
+    .detalle-table td {
+      font-family: 'Space Mono', monospace; padding: 8px 12px; border-bottom: 1px solid var(--border);
+      text-align: right; color: var(--ink);
+    }
+    .detalle-table td:first-child { text-align: left; color: var(--ink3); font-size: 10px; }
+    .detalle-table tr:last-child td { border-bottom: none; }
+    .detalle-table tr:hover td { background: var(--bg1); }
+    .det-verde { color: var(--green2) !important; font-weight: 700; }
+    .det-rojo  { color: var(--red2)   !important; font-weight: 700; }
+    .det-empty { text-align: center !important; color: var(--ink3); padding: 20px !important; }
+    .det-pct   { display: inline-block; width: 60px; height: 6px; background: var(--bg2); vertical-align: middle; margin-left: 4px; }
+    .det-pct-fill { height: 100%; background: var(--bronze2); }
 
     /* Flash */
     @keyframes flash-g { 0%,100%{background:transparent}50%{background:rgba(74,140,98,.15)} }
@@ -619,6 +651,11 @@
     </div>
     <div class="topbar-right">
       <span class="topbar-usdclp" id="topbar-usdclp">USD/CLP &#8212;</span>
+      <span class="topbar-balance" id="topbar-balance" onclick="toggleBalance()" title="Click: ocultar/mostrar · Doble click: editar">
+        <span class="bal-label">CAPITAL</span>
+        <span class="bal-val" id="bal-val">&#8212;</span>
+        <span class="bal-eye" id="bal-eye">&#128065;</span>
+      </span>
       <span class="topbar-time" id="topbar-time">&#8212;</span>
       <button class="btn-logout" onclick="logout()">SALIR</button>
     </div>
@@ -771,6 +808,33 @@
       </div>
     </section>
 
+    <!-- Skipo detalle posiciones -->
+    <section class="detalle-section" id="detalle-section">
+      <div class="detalle-header">
+        <p class="section-label" style="margin-bottom:0">Posiciones activas &#8212; detalle por tasa</p>
+        <button class="detalle-toggle" id="detalle-toggle-btn" onclick="toggleDetalle()">OCULTAR</button>
+      </div>
+      <div id="detalle-wrap">
+        <table class="detalle-table" id="detalle-table">
+          <thead>
+            <tr>
+              <th>Fecha / Hora</th>
+              <th>Precio</th>
+              <th>Break-even</th>
+              <th>USDT total</th>
+              <th>Disponible</th>
+              <th>% vendido</th>
+              <th>Spread</th>
+              <th>P&amp;L latente</th>
+            </tr>
+          </thead>
+          <tbody id="detalle-tbody">
+            <tr><td colspan="8" class="det-empty">Cargando posiciones...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- Banco Chile -->
     <section class="banco-section">
       <div class="banco-header">
@@ -793,7 +857,7 @@
       </table>
     </section>
 
-    <!-- Position + Chart -->
+    <!-- Position -->
     <div class="main-grid">
       <div class="position-box">
         <p class="pos-title">Posici&#243;n</p>
@@ -817,10 +881,6 @@
           <span class="pos-label">Ganancia hoy</span>
           <span class="pos-value pos-green" id="pos-ganancia">&#8212;</span>
         </div>
-      </div>
-      <div class="chart-box">
-        <p class="chart-title">Spread hist&#243;rico (&#250;ltima sesi&#243;n)</p>
-        <canvas id="chart-spread" style="min-height:200px"></canvas>
       </div>
     </div>
 
@@ -1076,7 +1136,7 @@ async function fetchUsdClp() {
 // FORMATTERS
 // ══════════════════════════════════════════════════════════════
 
-const _fmt  = v => v != null ? Math.round(v).toLocaleString('es-CL') : '\u2014';
+const _fmt  = v => v != null ? (+v).toLocaleString('es-CL', {minimumFractionDigits:2, maximumFractionDigits:2}) : '\u2014';
 const _fmtD = (v, d=2) => v != null ? (+v).toFixed(d) : '\u2014';
 
 // ══════════════════════════════════════════════════════════════
@@ -1266,46 +1326,6 @@ function renderSkipo(ps) {
   document.getElementById('pos-n-activas').textContent = String(ps.n_posiciones_activas || 0);
 }
 
-let _chartInst = null;
-
-function renderChart(history) {
-  if (!history || !history.length) return;
-  const labels  = history.map(s => (s.timestamp || '').slice(11, 16));
-  const spreads = history.map(s => s.mejor_spread ?? null);
-  const ctx     = document.getElementById('chart-spread').getContext('2d');
-  if (_chartInst) { _chartInst.destroy(); _chartInst = null; }
-  _chartInst = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data: spreads,
-        borderColor: '#2d5a3d',
-        borderWidth: 1.5,
-        tension: 0.3,
-        fill: true,
-        backgroundColor: 'rgba(45,90,61,0.06)',
-        pointRadius: 0,
-        spanGaps: true,
-      }],
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: { label: ctx => (ctx.parsed.y != null ? ctx.parsed.y.toFixed(2) : '\u2014') + '%' },
-          bodyFont: { family: 'Space Mono' },
-        },
-      },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { family: 'Space Mono', size: 9 }, color: '#7a7570', maxTicksLimit: 8 } },
-        y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'Space Mono', size: 9 }, color: '#7a7570', callback: v => v != null ? v.toFixed(1) + '%' : '' } },
-      },
-    },
-  });
-}
 
 // ══════════════════════════════════════════════════════════════
 // TICKER
@@ -1456,6 +1476,80 @@ async function opsImportar() {
   setTimeout(fetchAll, 500);
 }
 
+// ══════════════════════════════════════════════════════════════
+// BALANCE TOGGLE
+// ══════════════════════════════════════════════════════════════
+
+const BAL_KEY = 'sr71_capital';
+const BAL_VIS = 'sr71_capital_vis';
+
+function _renderBalance() {
+  const amount  = parseFloat(localStorage.getItem(BAL_KEY) || '0') || 0;
+  const visible = localStorage.getItem(BAL_VIS) !== 'false';
+  const valEl   = document.getElementById('bal-val');
+  const eyeEl   = document.getElementById('bal-eye');
+  if (!valEl) return;
+  if (amount === 0) {
+    valEl.textContent = '—';
+    eyeEl.textContent = '\u{1F441}';
+    return;
+  }
+  valEl.textContent = visible
+    ? '$' + amount.toLocaleString('es-CL', {minimumFractionDigits:2, maximumFractionDigits:2})
+    : '$ ●●●●●';
+  eyeEl.textContent = visible ? '\u{1F441}' : '\u{1F648}';
+}
+
+function toggleBalance() {
+  const vis = localStorage.getItem(BAL_VIS) !== 'false';
+  localStorage.setItem(BAL_VIS, String(!vis));
+  _renderBalance();
+}
+
+// ══════════════════════════════════════════════════════════════
+// SKIPO DETALLE
+// ══════════════════════════════════════════════════════════════
+
+let _detalleVisible = true;
+
+function toggleDetalle() {
+  _detalleVisible = !_detalleVisible;
+  document.getElementById('detalle-wrap').style.display = _detalleVisible ? '' : 'none';
+  document.getElementById('detalle-toggle-btn').textContent = _detalleVisible ? 'OCULTAR' : 'MOSTRAR';
+}
+
+function renderDetalle(positions) {
+  const tbody = document.getElementById('detalle-tbody');
+  if (!tbody) return;
+  if (!positions || !positions.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="det-empty">Sin posiciones activas</td></tr>';
+    return;
+  }
+  tbody.innerHTML = positions.map(p => {
+    const fecha  = (p.timestamp || p.fecha || '').slice(0, 16).replace('T', ' ');
+    const precio = '$' + _fmt(p.precio);
+    const be     = '$' + _fmt(p.break_even);
+    const total  = _fmtD(p.usdt_comprado, 2) + ' USDT';
+    const disp   = _fmtD(p.usdt_disponible, 2) + ' USDT';
+    const pct    = (p.pct_vendido || 0).toFixed(1);
+    const pctBar = '<span class="det-pct"><span class="det-pct-fill" style="width:' + Math.min(100, pct) + '%"></span></span>';
+    const sn     = p.spread_neto != null ? (p.spread_neto >= 0 ? '+' : '') + _fmtD(p.spread_neto, 2) + '%' : '—';
+    const snCls  = p.spread_neto == null ? '' : p.spread_neto >= 0.5 ? ' class="det-verde"' : p.spread_neto < 0 ? ' class="det-rojo"' : '';
+    const pnl    = p.pnl_latente != null ? (p.pnl_latente >= 0 ? '+' : '') + '$' + _fmt(p.pnl_latente) : '—';
+    const pnlCls = p.pnl_latente == null ? '' : p.pnl_latente >= 0 ? ' class="det-verde"' : ' class="det-rojo"';
+    return '<tr>' +
+      '<td>' + fecha + '</td>' +
+      '<td>' + precio + '</td>' +
+      '<td>' + be + '</td>' +
+      '<td>' + total + '</td>' +
+      '<td>' + disp + '</td>' +
+      '<td>' + pct + '% ' + pctBar + '</td>' +
+      '<td' + snCls + '>' + sn + '</td>' +
+      '<td' + pnlCls + '>' + pnl + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
 function renderOpsDay(pos) {
   if (!pos) return;
   const fmtU = v => v != null ? (+v).toFixed(2) + ' USDT' : '—';
@@ -1485,9 +1579,10 @@ async function fetchAll() {
     _apiGet('/api/banco/resumen'),
     _apiGet('/api/skipo/inventory'),
     _apiGet('/api/history?limit=48'),
+    _apiGet('/api/skipo/detalle'),
   ]);
 
-  const [bybit, okx, binance, usdclp, snap, movs, resumen, inventory, history]
+  const [bybit, okx, binance, usdclp, snap, movs, resumen, inventory, history, detalle]
     = results.map(r => r.status === 'fulfilled' ? r.value : null);
 
   // Merge exchange prices: direct fetch takes priority over snapshot cache
@@ -1511,9 +1606,9 @@ async function fetchAll() {
   renderHero(bestSpread, skipoP, bestEx);
   renderSkipo(snap?.posicion_skipo || null);
   renderOpsDay(snap?.posicion_skipo || null);
+  renderDetalle(Array.isArray(detalle) ? detalle : null);
   renderBanco(movs, resumen);
   renderPosition(inventory);
-  if (history) renderChart(history);
 
   // Auto-fill precio venta con mejor precio mercado
   const pvInput = document.getElementById('ops-precio-venta');
@@ -1548,8 +1643,20 @@ async function fetchAll() {
 function initDashboard() {
   _updateClock();
   updateTicker();
+  _renderBalance();
   fetchAll();
   setInterval(fetchAll, 30_000);
+
+  // Double-click on balance to edit
+  document.getElementById('topbar-balance')?.addEventListener('dblclick', e => {
+    e.preventDefault();
+    const cur = parseFloat(localStorage.getItem(BAL_KEY) || '0') || '';
+    const v = prompt('Capital total (CLP):', cur);
+    if (v !== null && !isNaN(parseFloat(String(v).replace(/\./g,'').replace(',','.')))) {
+      localStorage.setItem(BAL_KEY, String(parseFloat(String(v).replace(/\./g,'').replace(',','.'))));
+      _renderBalance();
+    }
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
