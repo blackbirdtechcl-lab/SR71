@@ -3,946 +3,931 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SR-71 | P2P Radar — Blackbird Tech</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>SR-71 P2P Radar — Blackbird Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-/* ── Reset ─────────────────────────────────────────────────────────── */
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:       #0e0b06;
-  --bg2:      #141009;
-  --bg3:      #1c1610;
-  --border:   #2d2416;
-  --gold:     #d4af37;
-  --gold2:    #b8961e;
-  --gold-dim: #8a7020;
-  --gold-hi:  #f0d878;
-  --text:     #e8dcc4;
-  --muted:    #8a7a5a;
-  --pos:      #4ade80;
-  --neg:      #f87171;
-  --mono:     'IBM Plex Mono', monospace;
-  --sans:     'IBM Plex Sans', sans-serif;
+  --bg:     #08090a;
+  --bg2:    #0f1012;
+  --bg3:    #141618;
+  --line:   #1e2124;
+  --gold:   #c9a84c;
+  --gold2:  #8f6f28;
+  --green:  #22c55e;
+  --red:    #ef4444;
+  --text:   #e2e8f0;
+  --muted:  #64748b;
+  --mono:   'IBM Plex Mono', 'Courier New', monospace;
+  --sans:   'Inter', -apple-system, sans-serif;
 }
 
 html { font-size: 13px; }
+
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--mono);
+  font-family: var(--sans);
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* ── INTRO — INTACTO ───────────────────────────────────────────────── */
-.intro-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: #000;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 1.2s ease;
-}
-.intro-overlay.hidden { opacity: 0; pointer-events: none; }
-#introVideo { width: 100%; height: 100%; object-fit: cover; }
-
-.play-btn {
-  position: absolute;
-  padding: 18px 42px;
-  background: var(--gold);
-  color: #0e0b06;
-  border: none;
-  border-radius: 2px;
-  font-size: 15px;
-  font-weight: 600;
-  font-family: var(--mono);
-  letter-spacing: 2px;
-  cursor: pointer;
-  transition: all .25s;
-}
-.play-btn:hover { background: var(--gold-hi); transform: scale(1.04); }
-
-.skip-btn {
-  position: absolute;
-  bottom: 28px; right: 28px;
-  padding: 8px 18px;
-  background: rgba(0,0,0,.6);
-  color: var(--gold);
-  border: 1px solid var(--gold2);
-  border-radius: 2px;
-  font-size: 11px;
-  font-family: var(--mono);
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all .2s;
-}
-.skip-btn:hover { background: var(--gold); color: #0e0b06; }
-
-/* ── AUDIO PLAYER ──────────────────────────────────────────────────── */
-.audio-player {
-  position: fixed;
-  bottom: 18px; left: 18px;
-  z-index: 9999;
-  cursor: pointer;
-  opacity: 0;
-  animation: fadeIn .5s ease 2s forwards;
-}
-@keyframes fadeIn { to { opacity: 1; } }
-
-.sr71-icon {
-  width: 50px; height: 50px;
-  background: radial-gradient(circle, var(--gold) 0%, var(--gold2) 100%);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 18px rgba(212,175,55,.35);
-  transition: all .3s;
-  position: relative;
-}
-.sr71-icon::before {
-  content: '✈';
-  font-size: 20px;
-  color: #0e0b06;
-  transform: rotate(-45deg);
-  display: block;
-}
-.sr71-icon.playing::before { animation: scramjet 1.1s ease-in-out infinite; }
-.sr71-icon:hover { box-shadow: 0 0 28px rgba(212,175,55,.6); transform: scale(1.08); }
-
-@keyframes scramjet {
-  0%,100% { transform: rotate(-45deg) scale(1); }
-  50%      { transform: rotate(-45deg) scale(1.25) translateX(2px); }
-}
-
-/* ── TOPBAR ────────────────────────────────────────────────────────── */
+/* ── Topbar ─────────────────────────────────────────────────────── */
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--line);
   background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  position: sticky; top: 0; z-index: 100;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
+.tl { display: flex; align-items: center; gap: 14px; }
+.tr { display: flex; align-items: center; gap: 16px; font-family: var(--mono); font-size: 0.69rem; color: var(--muted); }
+
 .logo {
-  font-size: 1rem;
+  font-family: var(--mono);
+  font-size: 0.95rem;
   font-weight: 600;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   color: var(--gold);
 }
-.logo span { color: var(--muted); font-weight: 300; }
+.logo em { color: var(--muted); font-style: normal; font-weight: 400; }
 
-.topbar-right {
-  display: flex; align-items: center; gap: 14px;
-  font-size: .7rem; color: var(--muted); letter-spacing: 1px;
+.chip {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 1px 6px;
+  text-transform: uppercase;
 }
+
+.usdclp-pill {
+  font-family: var(--mono);
+  font-size: 0.69rem;
+  color: var(--text);
+  border-left: 2px solid var(--gold2);
+  padding-left: 8px;
+}
+.usdclp-pill span { color: var(--gold); }
+
 .live-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--pos);
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
   display: inline-block;
-  animation: pulse 2.5s infinite;
+  opacity: 1;
+  transition: opacity 0.2s;
 }
-.live-dot.dead { background: var(--neg); animation: none; }
-@keyframes pulse {
-  0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,.4); }
-  50%      { opacity: .7; box-shadow: 0 0 0 5px rgba(74,222,128,0); }
+.live-dot.offline { background: var(--red); }
+
+button.refresh {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--line);
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
 }
+button.refresh:hover { color: var(--text); border-color: var(--muted); }
 
-/* ── MAIN ──────────────────────────────────────────────────────────── */
-.main { padding: 14px 18px; max-width: 1400px; margin: 0 auto; }
+/* ── Main ───────────────────────────────────────────────────────── */
+.main { padding: 14px 20px; max-width: 1500px; margin: 0 auto; }
 
-/* ── PRICE CARDS ───────────────────────────────────────────────────── */
+/* ── Price grid ─────────────────────────────────────────────────── */
 .price-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  margin-bottom: 1px;
 }
-@media (max-width: 900px) { .price-grid { grid-template-columns: repeat(3,1fr); } }
-@media (max-width: 580px) { .price-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 1000px) { .price-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px)  { .price-grid { grid-template-columns: repeat(2, 1fr); } }
 
-.pcard {
+.price-card {
   background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   position: relative;
-  transition: border-color .2s;
-}
-.pcard:hover { border-color: var(--gold2); }
-.pcard.best  { border-color: var(--gold); }
-.pcard.ref   { border-color: #2a2010; }
-
-.pcard-label {
-  font-size: .6rem; letter-spacing: 2px; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 5px;
-}
-.pcard-price {
-  font-size: 1.3rem; font-weight: 600; color: var(--text);
-  transition: color .3s;
-}
-.pcard-price.up   { color: var(--pos); }
-.pcard-price.down { color: var(--neg); }
-.pcard-spread { font-size: .75rem; margin-top: 3px; }
-.pcard-spread.pos { color: var(--pos); }
-.pcard-spread.neg { color: var(--neg); }
-.pcard-spread.na  { color: var(--muted); }
-
-.best-badge {
-  position: absolute; top: 7px; right: 8px;
-  font-size: .55rem; color: var(--gold);
-  letter-spacing: 1px;
 }
 
-/* ── OPP BANNER ────────────────────────────────────────────────────── */
-.opp {
-  background: #100d05;
-  border: 1px solid #2d2010;
-  border-left: 3px solid var(--gold);
-  border-radius: 2px;
-  padding: 9px 16px;
-  margin-bottom: 10px;
-  display: flex; align-items: center; gap: 10px;
-  font-size: .75rem;
+.card-label {
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
-.opp-lbl { color: var(--muted); letter-spacing: 1px; font-size: .65rem; }
-.opp-val { color: var(--pos); font-weight: 600; font-size: .95rem; }
-.opp-ex  { color: var(--gold); letter-spacing: 2px; font-size: .7rem; }
-.opp-ts  { margin-left: auto; color: var(--muted); font-size: .65rem; }
 
-/* ── BOTTOM GRID ───────────────────────────────────────────────────── */
-.bottom { display: grid; grid-template-columns: 1fr 380px; gap: 10px; }
-@media (max-width: 1050px) { .bottom { grid-template-columns: 1fr; } }
+.card-price {
+  font-family: var(--mono);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  transition: opacity 0.2s;
+}
+.card-price.updating { opacity: 0.4; }
 
-/* ── PANELS ────────────────────────────────────────────────────────── */
+.card-sub {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.card-sub .val-green { color: var(--green); }
+.card-sub .val-red   { color: var(--red); }
+
+/* ── Opportunity bar ────────────────────────────────────────────── */
+.opp-bar {
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-top: none;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.opp-val { color: var(--green); font-weight: 600; font-size: 0.9rem; }
+.opp-ex  { color: var(--gold); letter-spacing: 1px; }
+.opp-sep { color: var(--line); }
+.opp-ts  { margin-left: auto; color: var(--muted); }
+
+/* ── Skipo Intel row ──────────────────────────────────────────── */
+.skipo-intel-row {
+  background: var(--bg2);
+  border: 1px solid var(--gold2);
+  margin-bottom: 14px;
+  padding: 10px 16px;
+}
+.si-header {
+  font-family: var(--sans);
+  font-size: 0.58rem;
+  letter-spacing: 1.5px;
+  color: var(--gold);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.si-cells {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+}
+.si-cell {
+  flex: 1;
+  min-width: 100px;
+  border-right: 1px solid var(--line);
+  padding: 0 14px 0 0;
+  margin-right: 14px;
+}
+.si-cell:last-child { border-right: none; margin-right: 0; }
+.si-label { font-size: 0.55rem; color: var(--muted); letter-spacing: 0.8px; margin-bottom: 3px; }
+.si-val   { font-family: var(--mono); font-size: 0.82rem; color: var(--text); font-weight: 500; }
+.signal-comprar { color: var(--green) !important; }
+.signal-neutral { color: var(--gold) !important; }
+.signal-esperar { color: var(--red) !important; }
+
+/* ── Bottom grid ────────────────────────────────────────────────── */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 14px;
+}
+@media (max-width: 1100px) { .bottom-grid { grid-template-columns: 1fr; } }
+
+/* ── Panel ──────────────────────────────────────────────────────── */
 .panel {
   background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  overflow: hidden;
+  border: 1px solid var(--line);
 }
-.ph {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 14px;
-  background: var(--bg3);
-  border-bottom: 1px solid var(--border);
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--line);
 }
-.ph-title {
-  font-size: .6rem; letter-spacing: 2px; text-transform: uppercase;
+.panel-title {
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.8px;
   color: var(--muted);
+  text-transform: uppercase;
 }
 
-/* Exchange tabs */
-.tabs { display: flex; background: var(--bg3); border-bottom: 1px solid var(--border); }
+/* ── Exchange tabs ──────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+}
 .tab {
-  padding: 6px 12px;
-  font-size: .65rem; letter-spacing: 1px; text-transform: uppercase;
-  color: var(--muted); cursor: pointer;
+  padding: 6px 14px;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: var(--muted);
+  cursor: pointer;
   border-bottom: 2px solid transparent;
-  transition: all .12s;
+  transition: color 0.15s;
+  user-select: none;
 }
 .tab:hover  { color: var(--text); }
 .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
 
-/* Offers table */
-.otable { width: 100%; border-collapse: collapse; font-size: .73rem; }
-.otable th {
-  text-align: left; padding: 6px 10px;
-  font-size: .58rem; letter-spacing: 1px; text-transform: uppercase;
-  color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 400;
+/* ── Offers table ───────────────────────────────────────────────── */
+.offers-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+.offers-table th {
+  text-align: left;
+  padding: 6px 12px;
+  font-family: var(--sans);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
 }
-.otable td { padding: 7px 10px; border-bottom: 1px solid #1a1409; }
-.otable tr:last-child td { border-bottom: none; }
-.otable tr:hover td { background: #161008; }
-.price-c { font-weight: 600; font-size: .8rem; }
-.muted-c { color: var(--muted); }
-.methods { display: flex; flex-wrap: wrap; gap: 3px; }
-.mtag {
-  background: #0e0a04; border: 1px solid #2d2010;
-  color: var(--muted); font-size: .55rem; padding: 1px 5px; border-radius: 1px;
+.offers-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid #0d0f10;
+  font-family: var(--mono);
 }
-.empty { padding: 24px; text-align: center; color: var(--muted); font-size: .7rem; }
+.offers-table tr:last-child td { border-bottom: none; }
+.offers-table tr:hover td { background: #111315; }
+.t-price  { color: var(--text); font-weight: 500; font-size: 0.82rem; }
+.t-muted  { color: var(--muted); }
+.t-green  { color: var(--green); }
+.t-nick   { color: var(--gold2); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.t-methods { display: flex; flex-wrap: wrap; gap: 2px; }
+.method-tag {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 1px 4px;
+  white-space: nowrap;
+}
+.empty { padding: 28px; text-align: center; color: var(--muted); font-family: var(--mono); font-size: 0.72rem; }
 
-/* Pagos panel */
-.ptable { width: 100%; border-collapse: collapse; font-size: .72rem; }
-.ptable th {
-  text-align: left; padding: 6px 10px;
-  font-size: .58rem; letter-spacing: 1px; text-transform: uppercase;
-  color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 400;
+/* ── Chart ──────────────────────────────────────────────────────── */
+.chart-panel { display: flex; flex-direction: column; }
+.chart-wrap  { flex: 1; padding: 10px; min-height: 260px; }
+.chart-tabs  { display: flex; gap: 4px; padding: 0 14px; }
+.chart-tab {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.8px;
+  padding: 2px 8px;
+  cursor: pointer;
+  color: var(--muted);
+  border: 1px solid transparent;
+  transition: color 0.15s;
 }
-.ptable td { padding: 7px 10px; border-bottom: 1px solid #1a1409; }
-.ptable tr:last-child td { border-bottom: none; }
-.ptable tr:hover td { background: #161008; }
-.monto-c { color: var(--gold); font-weight: 500; }
-.banco-c { color: var(--muted); font-size: .65rem; }
-.hora-c  { color: var(--muted); }
+.chart-tab.active { color: var(--gold); border-color: var(--line); }
 
-/* Refresh btn */
-.rbtn {
-  background: #100d05; border: 1px solid var(--gold2);
-  color: var(--gold); font-family: var(--mono); font-size: .6rem;
-  padding: 3px 9px; border-radius: 2px; cursor: pointer;
-  letter-spacing: 1px; transition: all .15s;
+/* ── Footer ─────────────────────────────────────────────────────── */
+.footer {
+  text-align: center;
+  padding: 12px;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  margin-top: 14px;
+  letter-spacing: 1px;
 }
-.rbtn:hover { background: var(--gold); color: #0e0b06; }
 
-/* Spinner */
-.spin {
-  display: inline-block; width: 11px; height: 11px;
-  border: 2px solid var(--border); border-top-color: var(--gold);
-  border-radius: 50%; animation: rotate .6s linear infinite;
+/* ── Spinner ─────────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block; width: 10px; height: 10px;
+  border: 1px solid var(--line);
+  border-top-color: var(--muted);
+  border-radius: 50%;
+  animation: spin .5s linear infinite;
   vertical-align: middle;
 }
-@keyframes rotate { to { transform: rotate(360deg); } }
-
-/* ── FOOTER ────────────────────────────────────────────────────────── */
-.footer {
-  text-align: center; padding: 14px;
-  font-size: .6rem; color: var(--muted);
-  border-top: 1px solid var(--border);
-  letter-spacing: 2px; margin-top: 14px;
-}
-
-/* ── BG PHOTOS (subtle) ────────────────────────────────────────────── */
-.sr71-bg {
-  position: fixed; pointer-events: none; opacity: .025;
-  object-fit: cover; z-index: 0;
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════════════════ -->
-<!-- INTRO — INTACTO (video sr71 + Macarena slowed)                     -->
-<!-- ══════════════════════════════════════════════════════════════════ -->
-<div class="intro-overlay" id="introOverlay">
-  <video id="introVideo" muted playsinline>
-    <source src="/sr71_9sec.mp4" type="video/mp4">
-  </video>
-  <button class="play-btn" id="playBtn" onclick="startExperience()">▶ INICIAR SR-71</button>
-  <button class="skip-btn" onclick="skipIntro()" style="display:none;" id="skipBtn">SKIP</button>
-</div>
-
-<!-- AUDIO PLAYER (Macarena slowed — bottom left) -->
-<div class="audio-player" onclick="toggleAudio()">
-  <div class="sr71-icon" id="sr71Icon"></div>
-</div>
-<audio id="bgAudio" loop>
-  <source src="/macarena.mp3" type="audio/mpeg">
-</audio>
-
-<!-- BG PHOTOS -->
-<img src="/sr3.jpeg" class="sr71-bg" style="right:0;top:0;width:50%;height:50%;" alt="">
-<img src="/sr7.jpeg" class="sr71-bg" style="left:0;bottom:0;width:40%;height:40%;" alt="">
-
-<!-- ══════════════════════════════════════════════════════════════════ -->
-<!-- DASHBOARD P2P                                                       -->
-<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- ── Topbar ──────────────────────────────────────────────────────────── -->
 <div class="topbar">
-  <div class="logo">SR-71<span> / P2P RADAR</span></div>
-  <div class="topbar-right">
+  <div class="tl">
+    <div class="logo">SR-71<em> / P2P RADAR</em></div>
+    <div class="chip">CHILE</div>
+    <div class="chip">USDT/CLP</div>
+    <div class="usdclp-pill" id="usdclpPill" style="display:none">
+      USD/CLP <span id="usdclpVal">—</span>
+    </div>
+  </div>
+  <div class="tr">
     <span class="live-dot" id="liveDot"></span>
-    <span id="liveLabel">INIT</span>
-    <span id="lastTs" style="display:none"></span>
-    <button class="rbtn" onclick="forceRefresh()">⟳ REFRESH</button>
+    <span id="liveLabel">CONECTANDO</span>
+    <span id="lastUpdate"></span>
+    <button class="refresh" onclick="forceRefresh()">REFRESH</button>
   </div>
 </div>
 
+<!-- ── Main ───────────────────────────────────────────────────────────── -->
 <div class="main">
 
-  <!-- Price cards -->
-  <div class="price-grid">
-    <div class="pcard ref" id="card-skipo">
-      <div class="pcard-label">Skipo · Ref</div>
-      <div class="pcard-price" id="p-skipo">—</div>
-      <div class="pcard-spread na" id="s-skipo">compra USDT</div>
+  <!-- Price grid -->
+  <div class="price-grid" id="priceGrid">
+    <div class="price-card" id="card-skipo">
+      <div class="card-label">Skipo compra</div>
+      <div class="card-price" id="p-skipo">—</div>
+      <div class="card-sub" id="s-skipo">venta: —</div>
     </div>
-    <div class="pcard" id="card-bybit">
-      <div class="pcard-label">Bybit P2P</div>
-      <div class="pcard-price" id="p-bybit">—</div>
-      <div class="pcard-spread na" id="s-bybit">spread: —</div>
+    <div class="price-card" id="card-bybit">
+      <div class="card-label">Bybit P2P</div>
+      <div class="card-price" id="p-bybit">—</div>
+      <div class="card-sub" id="s-bybit">spread: —</div>
     </div>
-    <div class="pcard" id="card-okx">
-      <div class="pcard-label">OKX P2P</div>
-      <div class="pcard-price" id="p-okx">—</div>
-      <div class="pcard-spread na" id="s-okx">spread: —</div>
+    <div class="price-card" id="card-okx">
+      <div class="card-label">OKX P2P</div>
+      <div class="card-price" id="p-okx">—</div>
+      <div class="card-sub" id="s-okx">spread: —</div>
     </div>
-    <div class="pcard" id="card-binance">
-      <div class="pcard-label">Binance P2P</div>
-      <div class="pcard-price" id="p-binance">—</div>
-      <div class="pcard-spread na" id="s-binance">spread: —</div>
+    <div class="price-card" id="card-binance">
+      <div class="card-label">Binance P2P</div>
+      <div class="card-price" id="p-binance">—</div>
+      <div class="card-sub" id="s-binance">spread: —</div>
     </div>
-    <div class="pcard" id="card-usd">
-      <div class="pcard-label">USD / CLP</div>
-      <div class="pcard-price" id="p-usd">—</div>
-      <div class="pcard-spread na" id="s-usd">tipo de cambio</div>
+    <div class="price-card" id="card-bitget">
+      <div class="card-label">Bitget P2P</div>
+      <div class="card-price" id="p-bitget">—</div>
+      <div class="card-sub" id="s-bitget">spread: —</div>
     </div>
   </div>
 
-  <!-- Opportunity banner -->
-  <div class="opp" id="oppBanner">
-    <span class="opp-lbl">MEJOR</span>
-    <span class="opp-val" id="oppVal">—</span>
-    <span class="opp-lbl">spread neto en</span>
+  <!-- Opportunity bar -->
+  <div class="opp-bar">
+    <span>MEJOR</span>
+    <span class="opp-sep">//</span>
+    <span class="opp-val" id="oppSpread">—</span>
+    <span>spread en</span>
     <span class="opp-ex" id="oppEx">—</span>
     <span class="opp-ts" id="oppTs"></span>
   </div>
 
-  <!-- Bottom: offers + pagos -->
-  <div class="bottom">
+  <!-- Skipo Intel -->
+  <div class="skipo-intel-row" id="skipoIntelRow" style="display:none">
+    <div class="si-header">SKIPO INTEL</div>
+    <div class="si-cells">
+      <div class="si-cell">
+        <div class="si-label">SEÑAL</div>
+        <div class="si-val signal-neutral" id="siSignal">—</div>
+      </div>
+      <div class="si-cell">
+        <div class="si-label">SKIPO COMPRA</div>
+        <div class="si-val" id="siSkipo">—</div>
+      </div>
+      <div class="si-cell">
+        <div class="si-label">MARGEN BYBIT</div>
+        <div class="si-val" id="siBybit">—</div>
+      </div>
+      <div class="si-cell">
+        <div class="si-label">MARGEN OKX</div>
+        <div class="si-val" id="siOkx">—</div>
+      </div>
+      <div class="si-cell">
+        <div class="si-label">MARGEN BINANCE</div>
+        <div class="si-val" id="siBinance">—</div>
+      </div>
+      <div class="si-cell">
+        <div class="si-label">USD/CLP</div>
+        <div class="si-val" id="siUsdClp">—</div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Left: Top Offers -->
+  <!-- Bottom grid -->
+  <div class="bottom-grid">
+
+    <!-- Offers -->
     <div class="panel">
-      <div class="ph">
-        <span class="ph-title">Top Ofertas — Tiempo Real</span>
-        <button class="rbtn" id="offBtn" onclick="loadOfertas()">⟳</button>
+      <div class="panel-header">
+        <span class="panel-title">Top Ofertas</span>
+        <button class="refresh" onclick="loadOfertas()" id="ofBtn">REFRESH</button>
       </div>
-      <div class="tabs" id="offerTabs">
-        <div class="tab active" data-ex="bybit"   onclick="switchTab('bybit')">Bybit</div>
+      <div class="tabs" id="offersTabs">
+        <div class="tab active" data-ex="bybit"   onclick="switchTab('bybit')">BYBIT</div>
         <div class="tab"        data-ex="okx"     onclick="switchTab('okx')">OKX</div>
-        <div class="tab"        data-ex="binance" onclick="switchTab('binance')">Binance</div>
+        <div class="tab"        data-ex="binance" onclick="switchTab('binance')">BINANCE</div>
+        <div class="tab"        data-ex="bitget"  onclick="switchTab('bitget')">BITGET</div>
       </div>
-      <div id="offersBody"><div class="empty">Cargando ofertas...</div></div>
+      <div id="offersContent">
+        <div class="empty">Cargando ofertas...</div>
+      </div>
     </div>
 
-    <!-- Right: Últimos pagos -->
-    <div class="panel">
-      <div class="ph">
-        <span class="ph-title">Últimos Pagos Detectados</span>
-        <span id="pagosTs" style="font-size:.6rem;color:var(--muted)"></span>
+    <!-- Chart -->
+    <div class="panel chart-panel">
+      <div class="panel-header">
+        <span class="panel-title">Spread histórico</span>
+        <div class="chart-tabs">
+          <div class="chart-tab active" onclick="switchChartMode('spread')" id="ct-spread">SPREAD</div>
+          <div class="chart-tab"        onclick="switchChartMode('price')"  id="ct-price">PRECIO</div>
+        </div>
       </div>
-      <div id="pagosBody"><div class="empty">Sin datos aún</div></div>
+      <div class="chart-wrap">
+        <canvas id="spreadChart"></canvas>
+      </div>
     </div>
 
   </div>
 </div>
 
+<!-- ── Footer ─────────────────────────────────────────────────────────── -->
 <div class="footer">
-  BLACKBIRD TECH SpA &nbsp;·&nbsp; SR-71 P2P INTELLIGENCE &nbsp;·&nbsp; SANTIAGO CHILE
+  BLACKBIRD TECH SpA &nbsp;·&nbsp; SR-71 P2P INTELLIGENCE PLATFORM &nbsp;·&nbsp; SANTIAGO CHILE
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════════════════
-// Si tienes el backend SR-71 expuesto, cambia esta URL:
-const API_BASE = (typeof window !== 'undefined' && window.SR71_API)
-  ? window.SR71_API
-  : null;  // null = solo fetch directo a exchanges
-
-const TIMEOUT = 14000;
-const EXCHANGE_REFRESH = 3 * 60 * 1000;  // 3 min
-const PAGOS_REFRESH    = 2 * 60 * 1000;  // 2 min
-
-// ═══════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════
-const st = {
-  skipo:     null,
-  bybit:     null,
-  okx:       null,
-  binance:   null,
-  usdclp:    null,
-  offers:    {},
-  pagos:     [],
-  activeTab: 'bybit',
+// ── State ─────────────────────────────────────────────────────────────────
+const S = {
+  snap:      null,
+  history:   [],
+  ofertas:   {},
+  tab:       'bybit',
+  chartMode: 'spread',
   ws:        null,
-  wsOk:      false,
+  wsRetry:   0,
+  chart:     null,
+  hasBackend: false,
 };
 
-let prevP = {};
+// ── Formatters ────────────────────────────────────────────────────────────
+const fmtClp   = v => v == null ? '—' : '$' + Number(v).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const fmtPct   = v => v == null ? '—' : (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
+const fmtUsdt  = v => v == null ? '—' : Number(v).toLocaleString('es-CL', {minimumFractionDigits: 0}) + ' USDT';
+const fmtTime  = ts => ts ? ts.replace('T', ' ').slice(0, 16) : '';
+const esc      = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const setEl    = (id, val) => { const n = typeof id === 'string' ? document.getElementById(id) : id; if (n) n.textContent = val; };
 
-// ═══════════════════════════════════════════════════════════
-// INTRO — INTACTO
-// ═══════════════════════════════════════════════════════════
-const introEl  = document.getElementById('introOverlay');
-const introVid = document.getElementById('introVideo');
-const playBtn  = document.getElementById('playBtn');
-const skipBtn  = document.getElementById('skipBtn');
-const bgAudio  = document.getElementById('bgAudio');
-const sr71Icon = document.getElementById('sr71Icon');
-let audioOn = false;
+// ── Snapshot render ───────────────────────────────────────────────────────
+const EXCH = ['bybit', 'okx', 'binance', 'bitget'];
+const SPK  = { bybit:'spread_skipo_bybit', okx:'spread_skipo_okx', binance:'spread_skipo_binance', bitget:'spread_skipo_bitget' };
 
-function startExperience() {
-  playBtn.style.display = 'none';
-  skipBtn.style.display = 'block';
-  introVid.play().catch(() => {});
-  bgAudio.play().then(() => { audioOn = true; sr71Icon.classList.add('playing'); }).catch(() => {});
-}
+function renderSnapshot(snap) {
+  if (!snap || !snap.timestamp) return;
+  S.snap = snap;
 
-introVid.addEventListener('ended', () => skipIntro());
+  // Skipo
+  flashUpdate('p-skipo', fmtClp(snap.skipo_compra));
+  setEl('s-skipo', 'venta: ' + fmtClp(snap.skipo_venta));
 
-function skipIntro() {
-  introEl.classList.add('hidden');
-  setTimeout(() => introEl.style.display = 'none', 1200);
-}
+  // Exchanges
+  EXCH.forEach(ex => {
+    const precio = snap[ex + '_p2p'];
+    const spread = snap[SPK[ex]];
 
-function toggleAudio() {
-  if (audioOn) {
-    bgAudio.pause();
-    sr71Icon.classList.remove('playing');
-  } else {
-    bgAudio.play().then(() => sr71Icon.classList.add('playing')).catch(() => {});
-  }
-  audioOn = !audioOn;
-}
+    flashUpdate('p-' + ex, fmtClp(precio));
 
-// ═══════════════════════════════════════════════════════════
-// FORMATTERS
-// ═══════════════════════════════════════════════════════════
-const fClp  = v => v == null ? '—' : '$' + Number(v).toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-const fPct  = v => v == null ? '—' : (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
-const fUsdt = v => v == null ? '—' : Number(v).toLocaleString('es-CL', {maximumFractionDigits: 0}) + ' USDT';
-const fTs   = ts => ts ? ts.replace('T', ' ').slice(0, 16) : '';
-const esc   = s  => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-
-// ═══════════════════════════════════════════════════════════
-// RENDER PRICES
-// ═══════════════════════════════════════════════════════════
-function setCard(id, precio, spread) {
-  const pEl = document.getElementById('p-' + id);
-  const sEl = document.getElementById('s-' + id);
-  const card = document.getElementById('card-' + id);
-
-  // Flash
-  if (prevP[id] !== undefined && prevP[id] !== precio && precio != null) {
-    const cls = precio > prevP[id] ? 'up' : 'down';
-    pEl.classList.add(cls);
-    setTimeout(() => pEl.classList.remove('up', 'down'), 700);
-  }
-  prevP[id] = precio;
-
-  if (pEl) pEl.textContent = fClp(precio);
-
-  if (sEl && id !== 'skipo' && id !== 'usd') {
-    sEl.textContent = 'spread: ' + fPct(spread);
-    sEl.className = 'pcard-spread ' + (spread == null ? 'na' : spread >= 0 ? 'pos' : 'neg');
-  }
-
-  // Remove old best badge
-  const ob = card && card.querySelector('.best-badge');
-  if (ob) ob.remove();
-  if (card) card.classList.remove('best');
-}
-
-function renderPrices() {
-  const exs = {
-    bybit:   { precio: st.bybit,   spread: calcSpread(st.skipo, st.bybit) },
-    okx:     { precio: st.okx,     spread: calcSpread(st.skipo, st.okx) },
-    binance: { precio: st.binance, spread: calcSpread(st.skipo, st.binance) },
-  };
-
-  setCard('skipo',   st.skipo, null);
-  setCard('usd',     st.usdclp, null);
-  if (document.getElementById('s-usd'))
-    document.getElementById('s-usd').textContent = 'tipo de cambio';
-
-  let bestEx = null, bestSp = null;
-  for (const [ex, d] of Object.entries(exs)) {
-    setCard(ex, d.precio, d.spread);
-    if (d.spread != null && (bestSp == null || d.spread > bestSp)) {
-      bestSp = d.spread;
-      bestEx = ex;
+    const sub = document.getElementById('s-' + ex);
+    if (sub) {
+      if (spread == null) {
+        sub.innerHTML = 'spread: <span>—</span>';
+      } else {
+        const cls = spread >= 0 ? 'val-green' : 'val-red';
+        sub.innerHTML = 'spread: <span class="' + cls + '">' + fmtPct(spread) + '</span>';
+      }
     }
+  });
+
+  // Opportunity
+  setEl('oppSpread', fmtPct(snap.mejor_spread));
+  setEl('oppEx',     snap.mejor_exchange ? snap.mejor_exchange.toUpperCase() : '—');
+  setEl('oppTs',     fmtTime(snap.timestamp) + ' CL');
+  setEl('lastUpdate', fmtTime(snap.timestamp) + ' CL');
+
+  // USD/CLP if present
+  if (snap.usdclp != null) {
+    setEl('usdclpVal', fmtClp(snap.usdclp));
+    document.getElementById('usdclpPill').style.display = '';
   }
 
-  // Mark best
-  if (bestEx) {
-    const card = document.getElementById('card-' + bestEx);
-    if (card) {
-      card.classList.add('best');
-      const badge = document.createElement('div');
-      badge.className = 'best-badge';
-      badge.textContent = '★ BEST';
-      card.appendChild(badge);
-    }
+  // Skipo Intel row
+  renderSkipoIntel(snap);
+}
+
+function renderSkipoIntel(snap) {
+  const row = document.getElementById('skipoIntelRow');
+  if (!row || !snap.skipo_compra) return;
+  row.style.display = '';
+
+  const sk = snap.skipo_compra;
+
+  // Signal basada en mejor spread
+  const ms = snap.mejor_spread;
+  let signal = 'SIN DATOS', sigClass = '';
+  if (ms != null) {
+    if (ms >= 1.5)       { signal = '● COMPRAR';  sigClass = 'signal-comprar'; }
+    else if (ms >= 0.5)  { signal = '● NEUTRAL';  sigClass = 'signal-neutral'; }
+    else                 { signal = '● ESPERAR';  sigClass = 'signal-esperar'; }
   }
+  const sigEl = document.getElementById('siSignal');
+  if (sigEl) { sigEl.textContent = signal; sigEl.className = 'si-val ' + sigClass; }
 
-  // Banner
-  document.getElementById('oppVal').textContent = fPct(bestSp);
-  document.getElementById('oppEx').textContent  = bestEx ? bestEx.toUpperCase() : '—';
-  const ts = new Date().toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
-  document.getElementById('oppTs').textContent  = ts + ' Chile';
+  setEl('siSkipo',   fmtClp(sk));
 
-  // Topbar
-  document.getElementById('liveLabel').textContent = 'LIVE';
-  document.getElementById('lastTs').style.display = '';
-  document.getElementById('lastTs').textContent = ts;
+  const exMap = { siBybit: 'bybit_p2p', siOkx: 'okx_p2p', siBinance: 'binance_p2p' };
+  Object.entries(exMap).forEach(([id, col]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const p = snap[col];
+    if (!p || !sk) { el.textContent = '—'; return; }
+    const sp = (p - sk) / sk * 100;
+    el.textContent = fmtPct(sp);
+    el.className = 'si-val ' + (sp >= 0.5 ? 'val-green' : sp < 0 ? 'val-red' : '');
+  });
+
+  if (snap.usdclp) setEl('siUsdClp', fmtClp(snap.usdclp));
 }
 
-function calcSpread(skipo, exchange) {
-  if (!skipo || !exchange || skipo <= 0) return null;
-  return parseFloat(((exchange - skipo) / skipo * 100).toFixed(4));
-}
-
-// ═══════════════════════════════════════════════════════════
-// FETCH P2P PRICES
-// ═══════════════════════════════════════════════════════════
-async function fetchWithTimeout(url, opts = {}) {
-  const ctrl = new AbortController();
-  const tid  = setTimeout(() => ctrl.abort(), TIMEOUT);
-  try {
-    const r = await fetch(url, { ...opts, signal: ctrl.signal });
-    clearTimeout(tid);
-    return r;
-  } catch(e) { clearTimeout(tid); throw e; }
-}
-
-async function fetchBybitPrice() {
-  try {
-    const r = await fetchWithTimeout('https://api2.bybit.com/fiat/otc/item/online', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-      body: JSON.stringify({ userId:'', tokenId:'USDT', currencyId:'CLP', payment:[], side:'1', size:'5', page:'1', amount:'', authMaker:false, canTrade:false })
-    });
-    const d = await r.json();
-    const items = d?.result?.items || [];
-    const prices = items.map(i => parseFloat(i.price)).filter(p => p > 400 && p < 2000);
-    return prices.length ? Math.min(...prices) : null;
-  } catch(e) { return null; }
-}
-
-async function fetchBybitOffers(top = 8) {
-  try {
-    const r = await fetchWithTimeout('https://api2.bybit.com/fiat/otc/item/online', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json;charset=UTF-8' },
-      body: JSON.stringify({ userId:'', tokenId:'USDT', currencyId:'CLP', payment:[], side:'0', size:String(top), page:'1', amount:'', authMaker:false, canTrade:false })
-    });
-    const d = await r.json();
-    const PAGOS = {'14':'Transf.Banco','200':'MACH','223':'BancoEstado','230':'B.Chile','232':'Scotiabank','233':'Itaú','278':'Santander','375':'MercadoPago','404':'Tenpo','405':'BCI'};
-    return (d?.result?.items || []).filter(i => i.isOnline).slice(0, top).map(i => ({
-      precio:   parseFloat(i.price),
-      max:      parseFloat(i.maxAmount || 0),
-      cantidad: parseFloat(i.lastQuantity || i.quantity || 0),
-      comp:     parseInt(i.recentExecuteRate || 0),
-      metodos:  (i.payments || []).map(p => PAGOS[String(p)] || '·').filter(Boolean),
-      nick:     i.nickName || '',
-    })).filter(o => o.precio > 0);
-  } catch(e) { return []; }
-}
-
-async function fetchOkxPrice() {
-  try {
-    const url = new URL('https://www.okx.com/v3/c2c/tradingOrders/books');
-    url.search = new URLSearchParams({ baseCurrency:'USDT', quoteCurrency:'CLP', side:'buy', paymentMethod:'ALL', userType:'all', showTrade:'false', showFollow:'false', showAlreadyTraded:'false', isMoreData:'true', limit:'5', page:'1' });
-    const r = await fetchWithTimeout(url.toString());
-    const d = await r.json();
-    const orders = (d?.data?.buy || d?.data || []);
-    const prices = (Array.isArray(orders) ? orders : []).map(o => parseFloat(o.price)).filter(p => p > 400 && p < 2000);
-    return prices.length ? Math.min(...prices) : null;
-  } catch(e) { return null; }
-}
-
-async function fetchOkxOffers(top = 8) {
-  try {
-    const url = new URL('https://www.okx.com/v3/c2c/tradingOrders/books');
-    url.search = new URLSearchParams({ baseCurrency:'USDT', quoteCurrency:'CLP', side:'buy', paymentMethod:'ALL', userType:'all', showTrade:'false', showFollow:'false', showAlreadyTraded:'false', isMoreData:'true', limit:String(top), page:'1' });
-    const r = await fetchWithTimeout(url.toString());
-    const d = await r.json();
-    const orders = d?.data?.buy || d?.data || [];
-    return (Array.isArray(orders) ? orders : []).slice(0, top).map(o => ({
-      precio:   parseFloat(o.price || 0),
-      max:      parseFloat(o.quoteMaxAmountPerOrder || 0),
-      cantidad: parseFloat(o.availableAmount || o.tradableQuantity || 0),
-      comp:     Math.round(parseFloat(o.completedRate || 0) * 100),
-      metodos:  (o.paymentMethods || []).map(p => typeof p === 'object' ? (p.paymentType || p.tradeMethodName || '') : p).filter(Boolean),
-      nick:     o.nickName || '',
-    })).filter(o => o.precio > 0);
-  } catch(e) { return []; }
-}
-
-async function fetchBinancePrice() {
-  try {
-    const r = await fetchWithTimeout('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Origin':'https://p2p.binance.com' },
-      body: JSON.stringify({ asset:'USDT', fiat:'CLP', merchantCheck:false, page:1, payTypes:[], publisherType:null, rows:5, tradeType:'SELL' })
-    });
-    const d = await r.json();
-    const prices = (d?.data || []).map(a => parseFloat(a?.adv?.price)).filter(p => p > 0);
-    return prices.length ? Math.min(...prices) : null;
-  } catch(e) { return null; }
-}
-
-async function fetchBinanceOffers(top = 8) {
-  try {
-    const r = await fetchWithTimeout('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Origin':'https://p2p.binance.com' },
-      body: JSON.stringify({ asset:'USDT', fiat:'CLP', merchantCheck:false, page:1, payTypes:[], publisherType:null, rows:top, tradeType:'SELL' })
-    });
-    const d = await r.json();
-    return (d?.data || []).slice(0, top).map(ad => {
-      const a = ad?.adv || {}, av = ad?.advertiser || {};
-      const comp = parseFloat((av.monthOrderCompletion || '0').replace('%',''));
-      return {
-        precio:   parseFloat(a.price || 0),
-        max:      parseFloat(a.maxSingleTransAmount || 0),
-        cantidad: parseFloat(a.tradableQuantity || 0),
-        comp:     Math.round(comp),
-        metodos:  (a.tradeMethods || []).map(m => m.tradeMethodName || ''),
-        nick:     av.nickName || '',
-      };
-    }).filter(o => o.precio > 0);
-  } catch(e) { return []; }
-}
-
-async function fetchUsdClp() {
-  // Intentar mindicador.cl (oficial Chile)
-  try {
-    const r = await fetchWithTimeout('https://mindicador.cl/api/dolar');
-    const d = await r.json();
-    const v = d?.serie?.[0]?.valor;
-    if (v && v > 0) return parseFloat(v);
-  } catch(e) {}
-  // Fallback: data.json local
-  try {
-    const r = await fetch('/data.json?t=' + Date.now());
-    const d = await r.json();
-    if (d?.usdClp) return parseFloat(d.usdClp);
-    if (d?.usdtClp) return parseFloat(d.usdtClp);
-  } catch(e) {}
-  return null;
-}
-
-// ═══════════════════════════════════════════════════════════
-// FETCH FROM SR-71 BACKEND (if available)
-// ═══════════════════════════════════════════════════════════
-async function tryBackendSnapshot() {
-  if (!API_BASE) return null;
-  try {
-    const r = await fetchWithTimeout(API_BASE + '/api/snapshot');
-    return await r.json();
-  } catch(e) { return null; }
-}
-
-// ═══════════════════════════════════════════════════════════
-// REFRESH ALL PRICES
-// ═══════════════════════════════════════════════════════════
-async function refreshPrices() {
-  setLive(null);  // loading
-
-  // Try backend first (SR-71 API)
-  const snap = await tryBackendSnapshot();
-  if (snap && snap.bybit_p2p) {
-    st.skipo   = snap.skipo_compra;
-    st.bybit   = snap.bybit_p2p;
-    st.okx     = snap.okx_p2p;
-    st.binance = snap.binance_p2p;
-    if (!st.usdclp) st.usdclp = await fetchUsdClp();
-    renderPrices();
-    setLive(true);
-    return;
+function flashUpdate(id, newVal) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.textContent !== newVal) {
+    el.classList.add('updating');
+    setTimeout(() => {
+      el.textContent = newVal;
+      el.classList.remove('updating');
+    }, 200);
   }
-
-  // Direct browser fetch (no backend needed)
-  const [bybit, okx, binance, usdclp, skipoSnap] = await Promise.all([
-    fetchBybitPrice(),
-    fetchOkxPrice(),
-    fetchBinancePrice(),
-    fetchUsdClp(),
-    fetchSkipoFromJson(),
-  ]);
-
-  st.bybit   = bybit;
-  st.okx     = okx;
-  st.binance = binance;
-  st.usdclp  = usdclp;
-  st.skipo   = skipoSnap;
-
-  renderPrices();
-  setLive(bybit != null || okx != null || binance != null);
 }
 
-async function fetchSkipoFromJson() {
-  try {
-    const r = await fetch('/data.json?t=' + Date.now());
-    const d = await r.json();
-    return parseFloat(d?.skipoCompra || d?.usdtClp || 0) || null;
-  } catch(e) { return null; }
-}
-
-// ═══════════════════════════════════════════════════════════
-// OFFERS
-// ═══════════════════════════════════════════════════════════
-async function loadOfertas() {
-  const btn = document.getElementById('offBtn');
-  btn.innerHTML = '<span class="spin"></span>';
-
-  // Try backend API
-  if (API_BASE) {
-    try {
-      const r = await fetchWithTimeout(API_BASE + '/api/ofertas?top=8');
-      const d = await r.json();
-      st.offers = d;
-      renderTab();
-      btn.innerHTML = '⟳';
-      return;
-    } catch(e) {}
-  }
-
-  // Direct fetch
-  const [bybit, okx, binance] = await Promise.all([
-    fetchBybitOffers(8),
-    fetchOkxOffers(8),
-    fetchBinanceOffers(8),
-  ]);
-  st.offers = { bybit, okx, binance };
+// ── Offers render ─────────────────────────────────────────────────────────
+function renderOffers(data) {
+  S.ofertas = data || {};
   renderTab();
-  btn.innerHTML = '⟳';
 }
 
 function switchTab(ex) {
-  st.activeTab = ex;
+  S.tab = ex;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.ex === ex));
   renderTab();
 }
 
 function renderTab() {
-  const offers = st.offers[st.activeTab] || [];
-  const c = document.getElementById('offersBody');
-  if (!offers.length) {
-    c.innerHTML = `<div class="empty">Sin datos para ${st.activeTab.toUpperCase()}</div>`;
+  const list = S.ofertas[S.tab] || [];
+  const c = document.getElementById('offersContent');
+  if (!list.length) {
+    c.innerHTML = `<div class="empty">Sin datos para ${S.tab.toUpperCase()}</div>`;
     return;
   }
-  const rows = offers.map((o, i) => {
-    const methods = (o.metodos || []).slice(0, 4).map(m => `<span class="mtag">${esc(m)}</span>`).join('');
+  const rows = list.map((o, i) => {
+    const ms = (o.metodos || []).slice(0, 3).map(m => `<span class="method-tag">${esc(m)}</span>`).join('');
+    const cp = o.completado_pct ? `<span class="t-green">${o.completado_pct}%</span>` : '<span class="t-muted">—</span>';
     return `<tr>
-      <td class="muted-c" style="width:22px">${i+1}</td>
-      <td class="price-c">${fClp(o.precio)}</td>
-      <td class="muted-c">${fClp(o.max)}</td>
-      <td class="muted-c">${fUsdt(o.cantidad)}</td>
-      <td style="color:var(--pos)">${o.comp || '—'}%</td>
-      <td><div class="methods">${methods || '<span class="muted-c">—</span>'}</div></td>
+      <td class="t-muted" style="width:22px">${i+1}</td>
+      <td class="t-price">${fmtClp(o.precio)}</td>
+      <td class="t-muted">${fmtClp(o.max)}</td>
+      <td class="t-muted">${fmtUsdt(o.cantidad)}</td>
+      <td>${cp}</td>
+      <td><div class="t-methods">${ms || '<span class="t-muted">—</span>'}</div></td>
+      <td class="t-nick" title="${esc(o.nick||'')}">${esc(o.nick||'—')}</td>
     </tr>`;
   }).join('');
-  c.innerHTML = `<table class="otable">
-    <thead><tr><th>#</th><th>Precio</th><th>Máx</th><th>Cantidad</th><th>Comp</th><th>Métodos</th></tr></thead>
+  c.innerHTML = `<table class="offers-table">
+    <thead><tr>
+      <th>#</th><th>Precio</th><th>Máx</th><th>Cantidad</th>
+      <th>Comp%</th><th>Métodos</th><th>Trader</th>
+    </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 }
 
-// ═══════════════════════════════════════════════════════════
-// PAGOS
-// ═══════════════════════════════════════════════════════════
-async function loadPagos() {
-  // Try backend
-  if (API_BASE) {
-    try {
-      const r = await fetchWithTimeout(API_BASE + '/api/pagos?limit=12');
-      const d = await r.json();
-      renderPagos(d);
-      return;
-    } catch(e) {}
-  }
-  // Try static pagos.json
-  try {
-    const r = await fetch('/pagos.json?t=' + Date.now());
-    const d = await r.json();
-    renderPagos(Array.isArray(d) ? d : d.pagos || []);
-  } catch(e) {
-    document.getElementById('pagosBody').innerHTML = '<div class="empty">Sin pagos recientes</div>';
-  }
-}
-
-function renderPagos(pagos) {
-  const c = document.getElementById('pagosBody');
-  if (!pagos || !pagos.length) {
-    c.innerHTML = '<div class="empty">Sin pagos recientes</div>';
-    return;
-  }
-  const rows = pagos.slice(0, 12).map(p => {
-    const ts   = p.timestamp || p.fecha || '';
-    const hora = ts ? ts.slice(11, 16) : '—';
-    const monto = parseFloat(p.monto_clp || p.monto || 0);
-    const banco = p.banco || p.fuente || '—';
-    const remit = p.remitente || p.nombre || '—';
-    return `<tr>
-      <td class="hora-c">${hora}</td>
-      <td class="monto-c">$${monto > 0 ? monto.toLocaleString('es-CL') : '—'}</td>
-      <td class="banco-c">${esc(banco)}</td>
-      <td class="muted-c" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(remit)}">${esc(remit)}</td>
-    </tr>`;
-  }).join('');
-  c.innerHTML = `<table class="ptable">
-    <thead><tr><th>Hora</th><th>Monto CLP</th><th>Banco</th><th>Remitente</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>`;
-  document.getElementById('pagosTs').textContent = 'act. ' + new Date().toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
-}
-
-// ═══════════════════════════════════════════════════════════
-// WEBSOCKET (SR-71 backend si disponible)
-// ═══════════════════════════════════════════════════════════
-function connectWS() {
-  if (!API_BASE) return;
-  const proto = API_BASE.startsWith('https') ? 'wss' : 'ws';
-  const wsUrl = API_BASE.replace(/^https?/, proto) + '/ws/live';
-  const ws = new WebSocket(wsUrl);
-  st.ws = ws;
-
-  ws.onopen  = () => { st.wsOk = true; setLive(true); };
-  ws.onclose = () => {
-    st.wsOk = false;
-    setTimeout(connectWS, 10000);
-  };
-  ws.onmessage = (evt) => {
-    try {
-      const msg = JSON.parse(evt.data);
-      if (msg.type === 'snapshot' && msg.data) {
-        const d = msg.data;
-        st.skipo   = d.skipo_compra;
-        st.bybit   = d.bybit_p2p;
-        st.okx     = d.okx_p2p;
-        st.binance = d.binance_p2p;
-        renderPrices();
+// ── Chart ─────────────────────────────────────────────────────────────────
+function initChart() {
+  const ctx = document.getElementById('spreadChart').getContext('2d');
+  S.chart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: [], datasets: [] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          labels: { color: '#64748b', font: { family: "'IBM Plex Mono', monospace", size: 10 }, boxWidth: 10 }
+        },
+        tooltip: {
+          backgroundColor: '#0f1012',
+          borderColor: '#1e2124',
+          borderWidth: 1,
+          titleColor: '#64748b',
+          bodyColor: '#e2e8f0',
+          bodyFont: { family: "'IBM Plex Mono', monospace", size: 10 },
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#64748b', font: { size: 9, family: "'IBM Plex Mono', monospace" }, maxTicksLimit: 6, maxRotation: 0 },
+          grid:  { color: '#0d0f10' }
+        },
+        y: {
+          ticks: { color: '#64748b', font: { size: 9, family: "'IBM Plex Mono', monospace" } },
+          grid:  { color: '#0d0f10' }
+        }
       }
-    } catch(e) {}
-  };
+    }
+  });
 }
 
-// ═══════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════
-function setLive(ok) {
-  const dot = document.getElementById('liveDot');
-  const lbl = document.getElementById('liveLabel');
-  if (ok === null) {
-    dot.className = 'live-dot';
-    lbl.textContent = 'FETCHING';
-  } else if (ok) {
-    dot.className = 'live-dot';
-    lbl.textContent = 'LIVE';
+function switchChartMode(mode) {
+  S.chartMode = mode;
+  document.getElementById('ct-spread').classList.toggle('active', mode === 'spread');
+  document.getElementById('ct-price').classList.toggle('active', mode === 'price');
+  updateChart(S.history);
+}
+
+function updateChart(history) {
+  S.history = history || [];
+  if (!S.chart || !history.length) return;
+  const labels = history.map(s => fmtTime(s.timestamp).slice(11, 16));
+  let datasets;
+  if (S.chartMode === 'spread') {
+    datasets = [
+      { label: 'Bybit',   data: history.map(s => s.spread_skipo_bybit),   borderColor: '#c9a84c', backgroundColor: 'transparent', tension: .3, borderWidth: 1.5, pointRadius: 0 },
+      { label: 'OKX',     data: history.map(s => s.spread_skipo_okx),     borderColor: '#64748b', backgroundColor: 'transparent', tension: .3, borderWidth: 1.5, pointRadius: 0 },
+      { label: 'Binance', data: history.map(s => s.spread_skipo_binance), borderColor: '#94a3b8', backgroundColor: 'transparent', tension: .3, borderWidth: 1.5, pointRadius: 0 },
+      { label: 'Bitget',  data: history.map(s => s.spread_skipo_bitget),  borderColor: '#475569', backgroundColor: 'transparent', tension: .3, borderWidth: 1, pointRadius: 0 },
+    ];
+    S.chart.options.scales.y.ticks.callback = v => v != null ? (v >= 0 ? '+' : '') + v.toFixed(2) + '%' : null;
   } else {
-    dot.className = 'live-dot dead';
-    lbl.textContent = 'ERROR';
+    datasets = [
+      { label: 'Skipo',   data: history.map(s => s.skipo_compra), borderColor: '#c9a84c', backgroundColor: 'transparent', tension: .3, borderWidth: 2, pointRadius: 0 },
+      { label: 'Bybit',   data: history.map(s => s.bybit_p2p),   borderColor: '#64748b', backgroundColor: 'transparent', tension: .3, borderWidth: 1.5, pointRadius: 0 },
+      { label: 'OKX',     data: history.map(s => s.okx_p2p),     borderColor: '#94a3b8', backgroundColor: 'transparent', tension: .3, borderWidth: 1.5, pointRadius: 0 },
+      { label: 'Binance', data: history.map(s => s.binance_p2p), borderColor: '#475569', backgroundColor: 'transparent', tension: .3, borderWidth: 1.5, pointRadius: 0 },
+    ];
+    S.chart.options.scales.y.ticks.callback = v => v != null ? '$' + Math.round(v).toLocaleString('es-CL') : null;
   }
+  S.chart.data.labels   = labels;
+  S.chart.data.datasets = datasets;
+  S.chart.update('none');
+}
+
+// ── API calls — backend ───────────────────────────────────────────────────
+async function loadSnapshot() {
+  try {
+    const r = await fetch('/api/snapshot');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    S.hasBackend = true;
+    renderSnapshot(d);
+  } catch(e) {
+    S.hasBackend = false;
+    loadSnapshotDirect();
+  }
+}
+
+async function loadHistory(limit = 288) {
+  try {
+    const r = await fetch(`/api/history?limit=${limit}`);
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    updateChart(d);
+  } catch(e) {}
+}
+
+async function loadOfertas() {
+  const btn = document.getElementById('ofBtn');
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    if (S.hasBackend) {
+      const r = await fetch('/api/ofertas?top=10');
+      if (!r.ok) throw new Error(r.status);
+      renderOffers(await r.json());
+    } else {
+      await loadOfertasDirect();
+    }
+  } catch(e) {
+    document.getElementById('offersContent').innerHTML = '<div class="empty">Error cargando ofertas</div>';
+  } finally {
+    btn.innerHTML = 'REFRESH';
+  }
+}
+
+async function loadUsdClp() {
+  try {
+    const r = await fetch('/api/usdclp');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    if (d.valor) {
+      setEl('usdclpVal', fmtClp(d.valor));
+      document.getElementById('usdclpPill').style.display = '';
+    }
+  } catch(e) {}
 }
 
 async function forceRefresh() {
-  await Promise.all([refreshPrices(), loadOfertas(), loadPagos()]);
+  await Promise.all([loadSnapshot(), loadHistory(), loadOfertas(), loadUsdClp()]);
 }
 
-// ═══════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════
+// ── Standalone — fetch directo a exchanges desde browser ──────────────────
+async function loadSnapshotDirect() {
+  const [bybit, okx, binance] = await Promise.allSettled([
+    fetchDirectBybit(), fetchDirectOKX(), fetchDirectBinance()
+  ]);
+  const snap = {
+    timestamp:    new Date().toISOString().slice(0,19).replace('T',' '),
+    skipo_compra: null, skipo_venta: null,
+    bybit_p2p:    bybit.status === 'fulfilled'   ? bybit.value   : null,
+    okx_p2p:      okx.status === 'fulfilled'     ? okx.value     : null,
+    binance_p2p:  binance.status === 'fulfilled' ? binance.value : null,
+    bitget_p2p:   null,
+    spread_skipo_bybit: null, spread_skipo_okx: null,
+    spread_skipo_binance: null, spread_skipo_bitget: null,
+    mejor_spread: null, mejor_exchange: null, usdclp: null,
+  };
+  // Mínimo de los tres como referencia de mercado
+  const precios = [snap.bybit_p2p, snap.okx_p2p, snap.binance_p2p].filter(v => v != null);
+  if (precios.length) {
+    const mejor_ex_val = Math.min(...precios);
+    const ex_map = {[snap.bybit_p2p]:'bybit', [snap.okx_p2p]:'okx', [snap.binance_p2p]:'binance'};
+    snap.mejor_exchange = ex_map[mejor_ex_val] || null;
+  }
+  renderSnapshot(snap);
+}
+
+async function fetchDirectBybit() {
+  const r = await fetch('https://api2.bybit.com/fiat/otc/item/online', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json;charset=UTF-8'},
+    body: JSON.stringify({userId:'',tokenId:'USDT',currencyId:'CLP',payment:[],side:'1',size:'5',page:'1',amount:'',authMaker:false,canTrade:false}),
+  });
+  const d = await r.json();
+  if ((d.ret_code ?? d.retCode) !== 0) return null;
+  const items = d.result?.items || [];
+  const prices = items.map(i => parseFloat(i.price)).filter(Boolean);
+  return prices.length ? Math.min(...prices) : null;
+}
+
+async function fetchDirectOKX() {
+  const url = new URL('https://www.okx.com/v3/c2c/tradingOrders/books');
+  Object.entries({baseCurrency:'USDT',quoteCurrency:'CLP',side:'buy',paymentMethod:'ALL',userType:'all',showTrade:'false',showFollow:'false',showAlreadyTraded:'false',isMoreData:'true',limit:'5',page:'1'})
+    .forEach(([k,v]) => url.searchParams.set(k,v));
+  const r = await fetch(url.toString());
+  const d = await r.json();
+  let orders = d.data || {};
+  if (typeof orders === 'object' && !Array.isArray(orders)) orders = orders.buy || orders.sell || [];
+  const prices = (orders||[]).map(o => parseFloat(o.price)).filter(v => v > 500 && v < 2000);
+  return prices.length ? Math.min(...prices) : null;
+}
+
+async function fetchDirectBinance() {
+  const r = await fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Origin':'https://p2p.binance.com'},
+    body: JSON.stringify({asset:'USDT',fiat:'CLP',merchantCheck:false,page:1,payTypes:[],publisherType:null,rows:5,tradeType:'SELL'}),
+  });
+  const d = await r.json();
+  if (d.code !== '000000') return null;
+  const prices = (d.data||[]).map(ad => parseFloat(ad?.adv?.price||0)).filter(Boolean);
+  return prices.length ? Math.min(...prices) : null;
+}
+
+async function loadOfertasDirect() {
+  const [bybit, okx, binance] = await Promise.allSettled([
+    fetchDirectOffersBybit(), fetchDirectOffersOKX(), fetchDirectOffersBinance()
+  ]);
+  renderOffers({
+    bybit:   bybit.status === 'fulfilled'   ? bybit.value   : [],
+    okx:     okx.status === 'fulfilled'     ? okx.value     : [],
+    binance: binance.status === 'fulfilled' ? binance.value : [],
+    bitget:  [],
+  });
+}
+
+async function fetchDirectOffersBybit(n=10) {
+  const r = await fetch('https://api2.bybit.com/fiat/otc/item/online', {
+    method:'POST', headers:{'Content-Type':'application/json;charset=UTF-8'},
+    body: JSON.stringify({userId:'',tokenId:'USDT',currencyId:'CLP',payment:[],side:'1',size:String(n),page:'1',amount:'',authMaker:false,canTrade:false}),
+  });
+  const d = await r.json();
+  if ((d.ret_code ?? d.retCode) !== 0) return [];
+  return (d.result?.items||[]).slice(0,n).map(o => ({
+    precio: parseFloat(o.price||0),
+    min: parseFloat(o.minAmount||0),
+    max: parseFloat(o.maxAmount||0),
+    cantidad: parseFloat(o.lastQuantity||0),
+    completado_pct: Math.round(parseFloat(o.recentExecuteRate||o.completedOrderNum||0)),
+    metodos: (o.payments||[]).map(p => String(p)),
+    nick: o.nickName||'',
+  })).filter(o => o.precio > 0);
+}
+
+async function fetchDirectOffersOKX(n=10) {
+  const url = new URL('https://www.okx.com/v3/c2c/tradingOrders/books');
+  Object.entries({baseCurrency:'USDT',quoteCurrency:'CLP',side:'buy',paymentMethod:'ALL',userType:'all',showTrade:'false',showFollow:'false',showAlreadyTraded:'false',isMoreData:'true',limit:String(n),page:'1'})
+    .forEach(([k,v]) => url.searchParams.set(k,v));
+  const r = await fetch(url.toString());
+  const d = await r.json();
+  let orders = d.data||{};
+  if (typeof orders === 'object' && !Array.isArray(orders)) orders = orders.buy||orders.sell||[];
+  return (orders||[]).slice(0,n).map(o => ({
+    precio: parseFloat(o.price||0),
+    min: parseFloat(o.quoteMinAmountPerOrder||0),
+    max: parseFloat(o.quoteMaxAmountPerOrder||0),
+    cantidad: parseFloat(o.availableAmount||o.tradableQuantity||0),
+    completado_pct: Math.round(parseFloat(o.completedRate||0)*100),
+    metodos: (o.paymentMethods||[]).map(p => typeof p === 'object' ? p.paymentType : String(p)),
+    nick: o.nickName||'',
+  })).filter(o => o.precio > 500);
+}
+
+async function fetchDirectOffersBinance(n=10) {
+  const r = await fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Origin':'https://p2p.binance.com'},
+    body: JSON.stringify({asset:'USDT',fiat:'CLP',merchantCheck:false,page:1,payTypes:[],publisherType:null,rows:n,tradeType:'SELL'}),
+  });
+  const d = await r.json();
+  if (d.code !== '000000') return [];
+  return (d.data||[]).slice(0,n).map(ad => {
+    const adv = ad.adv||{}, anunc = ad.advertiser||{};
+    const comp = anunc.monthOrderCompletion||'0';
+    return {
+      precio: parseFloat(adv.price||0),
+      min: parseFloat(adv.minSingleTransAmount||0),
+      max: parseFloat(adv.maxSingleTransAmount||0),
+      cantidad: parseFloat(adv.tradableQuantity||0),
+      completado_pct: parseInt(comp)||0,
+      metodos: (adv.tradeMethods||[]).map(m => m.tradeMethodName||''),
+      nick: anunc.nickName||'',
+    };
+  }).filter(o => o.precio > 0);
+}
+
+// ── WebSocket ─────────────────────────────────────────────────────────────
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${proto}://${location.host}/ws/live`);
+  S.ws = ws;
+
+  ws.onopen = () => { S.wsRetry = 0; setLive(true); };
+  ws.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'snapshot') {
+        S.hasBackend = true;
+        renderSnapshot(msg.data);
+        if (S.history.length) {
+          S.history.push(msg.data);
+          if (S.history.length > 1440) S.history.shift();
+          updateChart(S.history);
+        }
+      }
+    } catch(err) {}
+  };
+  ws.onerror  = () => setLive(false);
+  ws.onclose  = () => {
+    setLive(false);
+    S.wsRetry++;
+    setTimeout(connectWS, Math.min(5000 * S.wsRetry, 60000));
+  };
+}
+
+function setLive(on) {
+  const dot = document.getElementById('liveDot');
+  dot.className = 'live-dot' + (on ? '' : ' offline');
+  setEl('liveLabel', on ? 'LIVE' : 'OFFLINE');
+}
+
+// Polling fallback cada 5 min si WS está caído
+setInterval(() => {
+  if (!S.ws || S.ws.readyState !== WebSocket.OPEN) loadSnapshot();
+}, 5 * 60 * 1000);
+
+// ── Init ──────────────────────────────────────────────────────────────────
 (async function init() {
-  // Parallel init
-  await Promise.all([refreshPrices(), loadOfertas(), loadPagos()]);
-
-  // Connect WebSocket if backend available
+  initChart();
+  await Promise.all([loadSnapshot(), loadHistory(), loadOfertas(), loadUsdClp()]);
   connectWS();
-
-  // Auto-refresh timers
-  setInterval(refreshPrices, EXCHANGE_REFRESH);
-  setInterval(loadOfertas,   EXCHANGE_REFRESH);
-  setInterval(loadPagos,     PAGOS_REFRESH);
+  setInterval(loadOfertas, 2 * 60 * 1000);
 })();
 </script>
-
 </body>
 </html>
