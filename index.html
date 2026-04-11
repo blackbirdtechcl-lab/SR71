@@ -421,6 +421,80 @@
       transition: width .5s ease;
     }
 
+    /* ── OPERACIONES ────────────────────────────────────────────────────────── */
+    .ops-section { margin-bottom: 32px; }
+    .ops-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .ops-card {
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .ops-card-title { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--ink); letter-spacing: .04em; }
+    .ops-card-sub   { font-size: 11px; color: var(--ink3); line-height: 1.4; }
+    .ops-form       { display: flex; flex-direction: column; gap: 10px; }
+    .ops-field      { display: flex; flex-direction: column; gap: 4px; }
+    .ops-field label { font-size: 10px; font-family: 'Space Mono', monospace; text-transform: uppercase; color: var(--ink3); letter-spacing: .06em; }
+    .ops-field input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 8px 10px;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: var(--ink);
+      width: 100%;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .ops-field input:focus { border-color: var(--bronze); }
+    .ops-preview {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--ink2);
+      background: var(--bg2);
+      padding: 6px 10px;
+      border-radius: 3px;
+      min-height: 24px;
+    }
+    .ops-btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 3px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .ops-btn:active { opacity: .75; }
+    .ops-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .ops-btn-freeze { background: var(--bronze);  color: #fff; }
+    .ops-btn-sell   { background: var(--green);   color: #fff; }
+    .ops-btn-import { background: var(--ink);      color: var(--bg); flex: 1; }
+    .ops-btn-sync   { background: var(--bg2);     color: var(--ink); border: 1px solid var(--border); flex: 1; }
+    .ops-btn-row    { display: flex; gap: 8px; }
+    .ops-result {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      min-height: 0;
+      padding: 0;
+      transition: all .2s;
+    }
+    .ops-result.ok  { color: var(--green2);  padding: 6px 0; }
+    .ops-result.err { color: var(--red2);    padding: 6px 0; }
+    .ops-day-stats  { display: flex; flex-direction: column; gap: 6px; }
+    .ops-day-row    { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink2); }
+    .ops-day-row span:last-child { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--ink); }
+
     /* Banco Chile */
     .banco-section { margin-bottom: 32px; }
     .banco-header {
@@ -631,6 +705,69 @@
             <span class="pos-stat-val" id="pos-n-activas">&#8212;</span>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ── OPERACIONES P2P ───────────────────────────────────────────────────── -->
+    <section class="ops-section" id="ops-section">
+      <p class="section-label">Operaciones P2P</p>
+      <div class="ops-grid">
+
+        <!-- CONGELAR -->
+        <div class="ops-card">
+          <div class="ops-card-title">❄ Congelar Capacity</div>
+          <div class="ops-card-sub">Registra compra de USDT a precio fijo en Skipo</div>
+          <div class="ops-form">
+            <div class="ops-field">
+              <label>Monto CLP</label>
+              <input type="number" id="ops-monto-clp" placeholder="10000000" step="100000" min="0">
+            </div>
+            <div class="ops-field">
+              <label>Precio CLP/USDT</label>
+              <input type="number" id="ops-precio-congelar" placeholder="899" step="0.01" min="0">
+            </div>
+            <div class="ops-preview" id="ops-preview-congelar">— USDT · break-even: —</div>
+          </div>
+          <button class="ops-btn ops-btn-freeze" id="btn-congelar" onclick="opsCongelar()">CONGELAR</button>
+          <div class="ops-result" id="ops-result-congelar"></div>
+        </div>
+
+        <!-- VENTA -->
+        <div class="ops-card">
+          <div class="ops-card-title">💰 Registrar Venta</div>
+          <div class="ops-card-sub">Marca USDT vendido (FIFO) y calcula P&L de la operación</div>
+          <div class="ops-form">
+            <div class="ops-field">
+              <label>USDT vendido</label>
+              <input type="number" id="ops-usdt-vendido" placeholder="500" step="0.01" min="0">
+            </div>
+            <div class="ops-field">
+              <label>Precio de venta</label>
+              <input type="number" id="ops-precio-venta" placeholder="905" step="0.01" min="0">
+            </div>
+            <div class="ops-preview" id="ops-preview-venta">P&L estimado: —</div>
+          </div>
+          <button class="ops-btn ops-btn-sell" id="btn-vendido" onclick="opsVendido()">REGISTRAR VENTA</button>
+          <div class="ops-result" id="ops-result-venta"></div>
+        </div>
+
+        <!-- IMPORTAR / ESTADO DÍA -->
+        <div class="ops-card">
+          <div class="ops-card-title">📥 Estado del Día</div>
+          <div class="ops-card-sub">Sincroniza posiciones desde Skipo API e importa al seguimiento</div>
+          <div class="ops-day-stats" id="ops-day-stats">
+            <div class="ops-day-row"><span>USDT congelado hoy</span><span id="day-usdt-hoy">—</span></div>
+            <div class="ops-day-row"><span>USDT vendido hoy</span><span id="day-usdt-vendido">—</span></div>
+            <div class="ops-day-row"><span>P&L realizado hoy</span><span id="day-pnl">—</span></div>
+            <div class="ops-day-row"><span>Posiciones activas</span><span id="day-n-pos">—</span></div>
+          </div>
+          <div class="ops-btn-row">
+            <button class="ops-btn ops-btn-import" onclick="opsImportar()">IMPORTAR (10 días)</button>
+            <button class="ops-btn ops-btn-sync" onclick="fetchAll()">REFRESH</button>
+          </div>
+          <div class="ops-result" id="ops-result-importar"></div>
+        </div>
+
       </div>
     </section>
 
@@ -847,13 +984,34 @@ _btnMusic.addEventListener('click', () => {
 // API HELPERS
 // ══════════════════════════════════════════════════════════════
 
+const _API_HEADERS = {
+  'ngrok-skip-browser-warning': 'true',
+  'Accept': 'application/json',
+};
+
 async function _apiGet(path) {
   if (!SR71_API) return null;
   try {
-    const r = await fetch(SR71_API + path, { signal: AbortSignal.timeout(6000) });
+    const r = await fetch(SR71_API + path, {
+      headers: _API_HEADERS,
+      signal: AbortSignal.timeout(8000),
+    });
     if (!r.ok) return null;
     return await r.json();
   } catch { return null; }
+}
+
+async function _apiPost(path, body) {
+  if (!SR71_API) return null;
+  try {
+    const r = await fetch(SR71_API + path, {
+      method: 'POST',
+      headers: { ..._API_HEADERS, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10000),
+    });
+    return await r.json();
+  } catch(e) { return { error: String(e) }; }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1191,6 +1349,128 @@ function _updateClock() {
 setInterval(_updateClock, 1000);
 
 // ══════════════════════════════════════════════════════════════
+// OPERACIONES P2P
+// ══════════════════════════════════════════════════════════════
+
+function _setResult(id, msg, ok) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.className   = 'ops-result ' + (ok ? 'ok' : 'err');
+}
+
+// Preview en vivo para CONGELAR
+document.addEventListener('DOMContentLoaded', () => {
+  const montoEl  = document.getElementById('ops-monto-clp');
+  const precioEl = document.getElementById('ops-precio-congelar');
+  const preEl    = document.getElementById('ops-preview-congelar');
+  const ventaEl  = document.getElementById('ops-usdt-vendido');
+  const pvEl     = document.getElementById('ops-precio-venta');
+  const preVEl   = document.getElementById('ops-preview-venta');
+
+  function updatePreviewCongelar() {
+    const m = parseFloat(montoEl?.value);
+    const p = parseFloat(precioEl?.value);
+    if (!m || !p || m <= 0 || p <= 0) { preEl.textContent = '— USDT · break-even: —'; return; }
+    const usdt = (m / p).toFixed(2);
+    const be   = (p * 1.0001).toFixed(2);
+    preEl.textContent = usdt + ' USDT · break-even: $' + Math.round(be).toLocaleString('es-CL');
+  }
+
+  function updatePreviewVenta() {
+    const u  = parseFloat(ventaEl?.value);
+    const pv = parseFloat(pvEl?.value);
+    if (!u || !pv) { preVEl.textContent = 'P&L estimado: —'; return; }
+    const snapEl = document.getElementById('pos-prom-big');
+    const promText = snapEl?.textContent?.replace(/[$,.]/g, '') || '';
+    const prom = parseFloat(promText);
+    if (!prom) { preVEl.textContent = 'P&L estimado: — (sin posición cargada)'; return; }
+    const pnl  = Math.round(u * (pv - prom));
+    const pct  = ((pv - prom) / prom * 100).toFixed(2);
+    preVEl.textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toLocaleString('es-CL') + ' CLP (' + (pnl>=0?'+':'') + pct + '%)';
+    preVEl.style.color = pnl >= 0 ? 'var(--green2)' : 'var(--red2)';
+  }
+
+  montoEl?.addEventListener('input', updatePreviewCongelar);
+  precioEl?.addEventListener('input', updatePreviewCongelar);
+  ventaEl?.addEventListener('input', updatePreviewVenta);
+  pvEl?.addEventListener('input', updatePreviewVenta);
+});
+
+async function opsCongelar() {
+  const monto = parseInt(document.getElementById('ops-monto-clp')?.value);
+  const precio = parseFloat(document.getElementById('ops-precio-congelar')?.value);
+  if (!monto || !precio || monto < 100000 || precio < 100) {
+    _setResult('ops-result-congelar', '⚠ Ingresa monto (≥100.000 CLP) y precio válido', false); return;
+  }
+  const btn = document.getElementById('btn-congelar');
+  btn.disabled = true; btn.textContent = 'PROCESANDO...';
+  const res = await _apiPost('/api/skipo/congelar', { monto_clp: monto, precio });
+  btn.disabled = false; btn.textContent = 'CONGELAR';
+  if (res?.error) { _setResult('ops-result-congelar', '✗ ' + res.error, false); return; }
+  _setResult('ops-result-congelar',
+    '✓ #' + res.id + ' — ' + (res.usdt_comprado||'?') + ' USDT · be: $' + Math.round(res.break_even||0).toLocaleString('es-CL'),
+    true);
+  document.getElementById('ops-monto-clp').value = '';
+  document.getElementById('ops-precio-congelar').value = '';
+  setTimeout(fetchAll, 500);
+}
+
+async function opsVendido() {
+  const usdt       = parseFloat(document.getElementById('ops-usdt-vendido')?.value);
+  const precioVenta = parseFloat(document.getElementById('ops-precio-venta')?.value);
+  if (!usdt || !precioVenta || usdt <= 0 || precioVenta < 100) {
+    _setResult('ops-result-venta', '⚠ Ingresa USDT y precio de venta válidos', false); return;
+  }
+  const btn = document.getElementById('btn-vendido');
+  btn.disabled = true; btn.textContent = 'PROCESANDO...';
+  const res = await _apiPost('/api/skipo/vendido', { usdt, precio_venta: precioVenta });
+  btn.disabled = false; btn.textContent = 'REGISTRAR VENTA';
+  if (res?.error) { _setResult('ops-result-venta', '✗ ' + res.error, false); return; }
+  const pos  = res.posicion || {};
+  const fifo = res.fifo    || {};
+  const prom = pos.precio_promedio || 0;
+  const be   = pos.break_even || 0;
+  const pnl  = prom ? Math.round(fifo.aplicado * (precioVenta - be)) : null;
+  const pnlStr = pnl != null ? (pnl>=0?'+':'') + '$' + Math.abs(pnl).toLocaleString('es-CL') + ' CLP' : '';
+  _setResult('ops-result-venta',
+    '✓ ' + (fifo.aplicado||usdt) + ' USDT vendidos' + (pnlStr ? ' · P&L ' + pnlStr : '') +
+    (fifo.sin_posicion > 0 ? ' · ⚠ sin posición: ' + fifo.sin_posicion + ' USDT' : ''),
+    true);
+  document.getElementById('ops-usdt-vendido').value = '';
+  document.getElementById('ops-precio-venta').value = '';
+  setTimeout(fetchAll, 500);
+}
+
+async function opsImportar() {
+  const btn = document.querySelector('.ops-btn-import');
+  if (btn) { btn.disabled = true; btn.textContent = 'IMPORTANDO...'; }
+  const res = await _apiPost('/api/skipo/importar', { dias: 10 });
+  if (btn) { btn.disabled = false; btn.textContent = 'IMPORTAR (10 días)'; }
+  if (!res || res.error) {
+    _setResult('ops-result-importar', '✗ ' + (res?.error || 'Error desconocido'), false); return;
+  }
+  _setResult('ops-result-importar',
+    '✓ ' + res.importadas + ' importadas · ' + res.ya_existian + ' ya existían · total API: ' + res.total_api,
+    true);
+  setTimeout(fetchAll, 500);
+}
+
+function renderOpsDay(pos) {
+  if (!pos) return;
+  const fmtU = v => v != null ? (+v).toFixed(2) + ' USDT' : '—';
+  const fmtC = v => v != null ? '$' + Math.round(v).toLocaleString('es-CL') : '—';
+  document.getElementById('day-usdt-hoy').textContent    = fmtU(pos.usdt_comprado_hoy);
+  document.getElementById('day-usdt-vendido').textContent = fmtU(pos.usdt_vendido_hoy);
+  document.getElementById('day-n-pos').textContent        = String(pos.n_posiciones_activas ?? '—');
+  const pnlEl = document.getElementById('day-pnl');
+  if (pnlEl) {
+    pnlEl.textContent = fmtC(pos.ganancia_clp);
+    pnlEl.style.color = (pos.ganancia_clp || 0) >= 0 ? 'var(--green2)' : 'var(--red2)';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
 // MAIN FETCH CYCLE
 // ══════════════════════════════════════════════════════════════
 
@@ -1214,7 +1494,7 @@ async function fetchAll() {
   const bybitP   = bybit   || snap?.bybit_p2p;
   const okxP     = okx     || snap?.okx_p2p;
   const binanceP = binance || snap?.binance_p2p;
-  const skipoP   = snap?.skipo_price || snap?.skipo_p2p;
+  const skipoP   = snap?.skipo_venta || snap?.skipo_compra;
   const usdclpV  = usdclp  || snap?.usdclp;
 
   // Compute spread
@@ -1230,9 +1510,14 @@ async function fetchAll() {
   renderPrices(skipoP, bybitP, okxP, binanceP);
   renderHero(bestSpread, skipoP, bestEx);
   renderSkipo(snap?.posicion_skipo || null);
+  renderOpsDay(snap?.posicion_skipo || null);
   renderBanco(movs, resumen);
   renderPosition(inventory);
   if (history) renderChart(history);
+
+  // Auto-fill precio venta con mejor precio mercado
+  const pvInput = document.getElementById('ops-precio-venta');
+  if (pvInput && !pvInput.value && bybitP) pvInput.value = bybitP;
 
   // Topbar
   if (usdclpV) document.getElementById('topbar-usdclp').textContent = 'USD/CLP $' + _fmt(usdclpV);
